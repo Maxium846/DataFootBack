@@ -1,5 +1,6 @@
 package com.dataFoot.ProjetData.service;
 
+import com.dataFoot.ProjetData.dto.ClubDetailDto;
 import com.dataFoot.ProjetData.dto.ClubDto;
 import com.dataFoot.ProjetData.mapper.ClubMapper;
 import com.dataFoot.ProjetData.model.Club;
@@ -52,5 +53,13 @@ public class ClubService {
             throw new RuntimeException("Club not found");
         }
         clubRepositoryInterface.deleteById(id);
+    }
+
+    public ClubDetailDto getClubDetail(Long id) {
+        Club club = clubRepositoryInterface.findByIdWithPlayers(id)
+                .orElseThrow(() -> new RuntimeException("Club non trouvé"));
+
+        // On mappe l'entité vers le DTO
+        return ClubMapper.toDetailDto(club);
     }
 }

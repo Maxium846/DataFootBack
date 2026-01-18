@@ -1,21 +1,36 @@
 package com.dataFoot.ProjetData.mapper;
 
+import com.dataFoot.ProjetData.dto.ClubDetailDto;
 import com.dataFoot.ProjetData.dto.ClubDto;
 import com.dataFoot.ProjetData.model.Club;
 
+import java.util.stream.Collectors;
+
 public class ClubMapper {
 
-    public static ClubDto toDto (Club club){
-
-
+    public static ClubDto toDto(Club club) {
         ClubDto dto = new ClubDto();
-        dto.id = club.getId();
-        dto.name = club.getName();;
-        dto.league = club.getLeague();
-        dto.country = club.getCountry();
-
+        dto.setId(club.getId());
+        dto.setName(club.getName());
+        dto.setLeague(club.getLeague());
+        dto.setCountry(club.getCountry());
         return dto;
 
+    }
+
+    // Pour le détail complet avec les joueurs
+    public static ClubDetailDto toDetailDto(Club club) {
+        ClubDetailDto dto = new ClubDetailDto();
+        dto.setId(club.getId());
+        dto.setName(club.getName());
+        dto.setLeague(club.getLeague());
+        dto.setCountry(club.getCountry());
+        dto.setPlayer(
+                club.getPlayer().stream()
+                        .map(PlayerMapper::toDto)
+                        .collect(Collectors.toList())
+        );
+        return dto;
     }
     public static Club toEntity(ClubDto dto) {
         Club club = new Club();

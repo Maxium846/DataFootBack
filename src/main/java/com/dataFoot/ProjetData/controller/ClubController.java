@@ -1,5 +1,6 @@
 package com.dataFoot.ProjetData.controller;
 
+import com.dataFoot.ProjetData.dto.ClubDetailDto;
 import com.dataFoot.ProjetData.dto.ClubDto;
 import com.dataFoot.ProjetData.service.ClubService;
 import org.springframework.web.bind.annotation.*;
@@ -21,11 +22,6 @@ public class ClubController {
     }
 
 
-    @GetMapping("/{id}")
-    public ClubDto getById(@PathVariable Long id) {
-        return clubService.findById(id);
-    }
-
     @PostMapping
     public ClubDto create(@RequestBody ClubDto dto) {
         return clubService.create(dto);
@@ -37,6 +33,11 @@ public class ClubController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         clubService.delete(id);
+    }
+
+    @GetMapping("/{id}")
+    public ClubDetailDto getClubDetailById(@PathVariable Long id) {
+        return clubService.getClubDetail(id);
     }
 
 }
