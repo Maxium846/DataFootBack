@@ -6,6 +6,5 @@ import lombok.*;
 public class ClubDto {
     public Long id;
     public String name;
-    public String country;
-    public String leagueId;
+    public Long leagueId;
 }

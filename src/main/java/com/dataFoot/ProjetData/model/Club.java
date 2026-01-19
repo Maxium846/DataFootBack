@@ -21,8 +21,6 @@ public class Club {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private String country;
-
     @OneToMany(mappedBy = "club",cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Player> player = new ArrayList<>();

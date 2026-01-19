@@ -32,12 +32,10 @@ public class LeagueMapper {
     }
 
     public static League toEntity (LeagueDto leagueDto){
-
-
         League league = new League();
-        league.setId(leagueDto.getId());
         league.setCountry(leagueDto.getCountry());
         league.setName(leagueDto.getName());
+
 
         return league;
     }

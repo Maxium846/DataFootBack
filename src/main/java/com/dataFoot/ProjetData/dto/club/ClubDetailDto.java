@@ -9,9 +9,8 @@ public class ClubDetailDto {
 
     public Long id;
     public String name;
-    public String country;
-    public String league;
     public List<PlayerInClubDto> player;
+
 
 
 }

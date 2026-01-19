@@ -1,10 +1,11 @@
 package com.dataFoot.ProjetData.service;
 
-import com.dataFoot.ProjetData.dto.club.ClubDetailDto;
 import com.dataFoot.ProjetData.dto.club.ClubDto;
 import com.dataFoot.ProjetData.mapper.ClubMapper;
 import com.dataFoot.ProjetData.model.Club;
+import com.dataFoot.ProjetData.model.League;
 import com.dataFoot.ProjetData.repository.ClubRepositoryInterface;
+import com.dataFoot.ProjetData.repository.LeagueRepositoryInterface;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,19 +14,30 @@ import java.util.List;
 public class ClubService {
 
     private final ClubRepositoryInterface clubRepositoryInterface;
+    private final LeagueRepositoryInterface leagueRepositoryInterface;
 
 
-    public ClubService(ClubRepositoryInterface clubRepositoryInterface) {
+    public ClubService(ClubRepositoryInterface clubRepositoryInterface, LeagueRepositoryInterface leagueRepositoryInterface) {
         this.clubRepositoryInterface = clubRepositoryInterface;
+        this.leagueRepositoryInterface = leagueRepositoryInterface;
     }
 
-    public ClubDto create(ClubDto dto){
+    public ClubDto createClub(ClubDto dto) {
 
-        Club club = ClubMapper.toEntity(dto);
+        League league = leagueRepositoryInterface.findById(dto.getLeagueId())
+                .orElseThrow(() -> new RuntimeException("League not found"));
+
+
+        //« À partir des données du DTO et de la ligue trouvée en base,
+        //crée-moi un objet Club prêt à être sauvegardé.
+        Club club = ClubMapper.toEntity(dto, league);
+
         Club saved = clubRepositoryInterface.save(club);
-        return ClubMapper.toDto(saved);
 
+        return ClubMapper.toDto(saved);
     }
+
+
     public List<ClubDto> findAll() {
         return clubRepositoryInterface.findAll()
                 .stream()
@@ -54,14 +66,5 @@ public class ClubService {
         }
         clubRepositoryInterface.deleteById(id);
     }
-
-    public ClubDetailDto getClubDetail(Long id) {
-        Club club = clubRepositoryInterface.findByIdWithPlayers(id)
-                .orElseThrow(() -> new RuntimeException("Club non trouvé"));
-
-        // On mappe l'entité vers le DTO
-        return ClubMapper.toDetailDto(club);
-    }
-
 
 }
