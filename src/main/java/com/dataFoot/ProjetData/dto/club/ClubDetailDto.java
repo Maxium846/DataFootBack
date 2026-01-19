@@ -1,6 +1,6 @@
-package com.dataFoot.ProjetData.dto;
+package com.dataFoot.ProjetData.dto.club;
 
-import com.dataFoot.ProjetData.model.Player;
+import com.dataFoot.ProjetData.dto.player.PlayerInClubDto;
 import lombok.*;
 
 import java.util.List;
@@ -11,7 +11,7 @@ public class ClubDetailDto {
     public String name;
     public String country;
     public String league;
-    public List<PlayerDto> player;
+    public List<PlayerInClubDto> player;
 
 
 }

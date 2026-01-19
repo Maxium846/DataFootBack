@@ -1,4 +1,4 @@
-package com.dataFoot.ProjetData.dto;
+package com.dataFoot.ProjetData.dto.club;
 
 import lombok.*;
 
@@ -6,6 +6,6 @@ import lombok.*;
 public class ClubDto {
     public Long id;
     public String name;
-    public String league;
     public String country;
+    public String leagueId;
 }

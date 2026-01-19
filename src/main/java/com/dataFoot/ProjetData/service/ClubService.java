@@ -1,7 +1,7 @@
 package com.dataFoot.ProjetData.service;
 
-import com.dataFoot.ProjetData.dto.ClubDetailDto;
-import com.dataFoot.ProjetData.dto.ClubDto;
+import com.dataFoot.ProjetData.dto.club.ClubDetailDto;
+import com.dataFoot.ProjetData.dto.club.ClubDto;
 import com.dataFoot.ProjetData.mapper.ClubMapper;
 import com.dataFoot.ProjetData.model.Club;
 import com.dataFoot.ProjetData.repository.ClubRepositoryInterface;
@@ -62,4 +62,6 @@ public class ClubService {
         // On mappe l'entité vers le DTO
         return ClubMapper.toDetailDto(club);
     }
+
+
 }
