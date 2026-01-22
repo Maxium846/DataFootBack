@@ -24,4 +24,5 @@ public class League {
     private String country;
     @OneToMany(mappedBy = "league", cascade = CascadeType.REMOVE)
     private List<Club> clubs = new ArrayList<>();
+
 }

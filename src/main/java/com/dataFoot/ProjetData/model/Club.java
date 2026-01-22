@@ -27,4 +27,5 @@ public class Club {
     @ManyToOne
     @JoinColumn(name = "league_id")
     private League league;
+
 }

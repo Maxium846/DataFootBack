@@ -26,6 +26,8 @@ public class ClubController {
     public ClubDto create(@RequestBody ClubDto dto) {
         return clubService.createClub(dto);
     }
+
+
     @PutMapping("/{id}")
     public ClubDto update(@PathVariable Long id, @RequestBody ClubDto dto) {
         return clubService.update(id, dto);

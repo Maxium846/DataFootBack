@@ -27,7 +27,6 @@ public class LeagueMapper {
         leagueDetailDto.setClubs(
                 league.getClubs().stream().map(ClubMapper::toDto).collect(Collectors.toList())
         );
-
         return leagueDetailDto;
     }
 
