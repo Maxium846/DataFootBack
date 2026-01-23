@@ -22,6 +22,8 @@ public class ClubController {
         return clubService.findAll();
     }
 
+    @GetMapping("/{id}")
+    public ClubDto getClubsById(@PathVariable Long id){return clubService.findById(id);}
     @PostMapping
     public ClubDto create(@RequestBody ClubDto dto) {
         return clubService.createClub(dto);

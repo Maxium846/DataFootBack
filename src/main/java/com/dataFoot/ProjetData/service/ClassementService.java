@@ -26,7 +26,7 @@ public class ClassementService {
         return league.getClubs().stream().map(club -> {
 
             ClassementDto classementDto = new ClassementDto();
-            classementDto.setClubId(leagueId);
+            classementDto.setClubId(club.getId());
             classementDto.setClubName(club.getName());
             classementDto.setLosses(0);
             classementDto.setDraws(0);
