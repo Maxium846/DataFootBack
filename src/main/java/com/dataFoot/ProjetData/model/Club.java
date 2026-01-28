@@ -11,7 +11,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = "player")
+@ToString(exclude = {"player", "classements"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "clubs")
@@ -20,12 +20,23 @@ public class Club {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String name;
-    @OneToMany(mappedBy = "club",cascade = CascadeType.ALL)
+
+    // Relation avec joueurs
+    @OneToMany(mappedBy = "club", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Player> player = new ArrayList<>();
+
+    // Relation avec League
     @ManyToOne
     @JoinColumn(name = "league_id")
     private League league;
 
+    private String president;
+    private String entraineur;
+
+    // Relation avec Classement
+    @OneToMany(mappedBy = "club", cascade = CascadeType.ALL)
+    private List<Classement> classements = new ArrayList<>();
 }

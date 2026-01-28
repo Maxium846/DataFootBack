@@ -13,16 +13,22 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@ToString(exclude = "clubs")
+@ToString(exclude = {"clubs", "classements"})
 @Table(name = "championnats")
 public class League {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String name;
     private String country;
+
+    // Relation avec clubs
     @OneToMany(mappedBy = "league", cascade = CascadeType.REMOVE)
     private List<Club> clubs = new ArrayList<>();
 
+    // Relation avec Classement
+    @OneToMany(mappedBy = "league", cascade = CascadeType.ALL)
+    private List<Classement> classements = new ArrayList<>();
 }

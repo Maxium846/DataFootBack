@@ -1,6 +1,7 @@
 package com.dataFoot.ProjetData.controller;
 
-import com.dataFoot.ProjetData.dto.league.LeagueDetailDto;
+import com.dataFoot.ProjetData.dto.league.LeagueAffichageDto;
+import com.dataFoot.ProjetData.dto.league.LeagueByIdDto;
 import com.dataFoot.ProjetData.dto.league.LeagueDto;
 import com.dataFoot.ProjetData.service.LeagueService;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +19,7 @@ public class LeagueController {
     }
 
     @GetMapping
-    public List<LeagueDto> getAllLeague (){
+    public List<LeagueAffichageDto> getAllLeague (){
 
         return leagueService.findAll();
     }
@@ -29,9 +30,9 @@ public class LeagueController {
 
     }
     @GetMapping("/{id}")
-    public LeagueDetailDto getLeagueDetailById (@PathVariable Long id){
+    public LeagueByIdDto getLeagueById (@PathVariable Long id){
 
-        return leagueService.getLeagueDetail(id);
+        return leagueService.getLeagueById(id);
     }
     @DeleteMapping("/{id}")
     public void deleteLeague(@PathVariable Long id){

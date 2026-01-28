@@ -11,6 +11,4 @@ public class ClubDetailDto {
     public String name;
     public List<PlayerInClubDto> player;
 
-
-
 }

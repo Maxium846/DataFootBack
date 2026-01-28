@@ -1,6 +1,7 @@
 package com.dataFoot.ProjetData.mapper;
 
-import com.dataFoot.ProjetData.dto.league.LeagueDetailDto;
+import com.dataFoot.ProjetData.dto.league.LeagueAffichageDto;
+import com.dataFoot.ProjetData.dto.league.LeagueByIdDto;
 import com.dataFoot.ProjetData.dto.league.LeagueDto;
 import com.dataFoot.ProjetData.model.League;
 
@@ -9,18 +10,23 @@ import java.util.stream.Collectors;
 public class LeagueMapper {
 
 
+    public static LeagueAffichageDto toDtoAfichage(League league){
+
+        LeagueAffichageDto leagueAffichageDto = new LeagueAffichageDto();
+        leagueAffichageDto.setId(league.getId());
+        leagueAffichageDto.setName(league.getName());
+        return leagueAffichageDto;
+    }
     public static LeagueDto toDto(League league){
 
         LeagueDto leagueDto = new LeagueDto();
         leagueDto.setId(league.getId());
         leagueDto.setName(league.getName());
-        leagueDto.setCountry(league.getCountry());
         return leagueDto;
     }
+    public static LeagueByIdDto toDetailDto(League league){
 
-    public static LeagueDetailDto toDetailDto( League league){
-
-        LeagueDetailDto leagueDetailDto = new LeagueDetailDto();
+        LeagueByIdDto leagueDetailDto = new LeagueByIdDto();
         leagueDetailDto.setId(league.getId());
         leagueDetailDto.setCountry(league.getCountry());
         leagueDetailDto.setName(league.getName());
