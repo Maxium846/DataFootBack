@@ -8,6 +8,7 @@ import com.dataFoot.ProjetData.repository.ClassementRepositoryInterface;
 import com.dataFoot.ProjetData.repository.ClubRepositoryInterface;
 import com.dataFoot.ProjetData.repository.LeagueRepositoryInterface;
 import com.dataFoot.ProjetData.repository.MatchRepositoryInterface;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -22,90 +23,38 @@ public class CalendarService {
 
     private final LeagueRepositoryInterface leagueRepositoryInterface;
     private final ClassementRepositoryInterface classementRepositoryInterface;
+
+    private final ClubRepositoryInterface clubRepositoryInterface;
     public CalendarService(ClubRepositoryInterface clubRepository,
-                           MatchRepositoryInterface matchRepository, LeagueRepositoryInterface leagueRepositoryInterface, ClassementRepositoryInterface classementRepositoryInterface) {
+                           MatchRepositoryInterface matchRepository, LeagueRepositoryInterface leagueRepositoryInterface, ClassementRepositoryInterface classementRepositoryInterface, ClubRepositoryInterface clubRepositoryInterface) {
         this.clubRepository = clubRepository;
         this.matchRepository = matchRepository;
         this.leagueRepositoryInterface = leagueRepositoryInterface;
         this.classementRepositoryInterface = classementRepositoryInterface;
+        this.clubRepositoryInterface = clubRepositoryInterface;
     }
 
+    @Transactional
     public void generateCalendar(Long leagueId) {
 
+        // 🔹 Ligue
         League league = leagueRepositoryInterface.findById(leagueId)
-                .orElseThrow(() -> new RuntimeException("League introuvable"));
+                .orElseThrow(() -> new RuntimeException("Ligue introuvable"));
 
-        // Récupère tous les clubs de la ligue
-        List<Club> clubs = new ArrayList<>(clubRepository.findByLeagueId(leagueId));
-
-        if (clubs.size() % 2 != 0) {
-            // Ajouter un "ghost" si nombre impair
-            clubs.add(null);
+        // 🔹 Clubs réels
+        List<Club> realClubs = clubRepositoryInterface.findByLeagueId(leagueId);
+        if (realClubs.size() < 2) {
+            throw new RuntimeException("Pas assez de clubs pour générer un calendrier");
         }
 
-        int numClubs = clubs.size();
-        int numJournees = numClubs - 1;
-        int halfSize = numClubs / 2;
+        // 🔹 Nettoyage
+        matchRepository.deleteByLeagueId(leagueId);
+        classementRepositoryInterface.deleteByLeagueId(leagueId);
 
-        List<Match> allMatches = new ArrayList<>();
-
-        List<Club> rotation = new ArrayList<>(clubs);
-        Club fixed = rotation.get(0); // Club fixe pour le round-robin
-
-        for (int journee = 1; journee <= numJournees; journee++) {
-            List<Match> matchesThisRound = new ArrayList<>();
-
-            for (int i = 0; i < halfSize; i++) {
-                Club home, away;
-
-                if (i == 0) {
-                    home = fixed;
-                    away = rotation.get(rotation.size() - 1);
-                } else {
-                    home = rotation.get(i);
-                    away = rotation.get(rotation.size() - 1 - i);
-                }
-
-                if (home != null && away != null) {
-                    // Alterner domicile/extérieur
-                    if (journee % 2 == 0) {
-                        Match match = new Match();
-                        match.setLeague(league);
-                        match.setHomeClub(home);
-                        match.setAwayClub(away);
-                        match.setJournee(journee);
-                        match.setHomeGoals(0);
-                        match.setAwayGoals(0);
-                        matchesThisRound.add(match);
-                    } else {
-                        Match match = new Match();
-                        match.setLeague(league);
-                        match.setHomeClub(away);
-                        match.setAwayClub(home);
-                        match.setJournee(journee);
-                        match.setHomeGoals(0);
-                        match.setAwayGoals(0);
-                        matchesThisRound.add(match);
-                    }
-                }
-            }
-
-            allMatches.addAll(matchesThisRound);
-
-            // Rotation pour la prochaine journée (circle method)
-            List<Club> newRotation = new ArrayList<>();
-            newRotation.add(rotation.get(0)); // fixed stays
-            newRotation.add(rotation.get(rotation.size() - 1)); // last moves to 2nd position
-            newRotation.addAll(rotation.subList(1, rotation.size() - 1));
-            rotation = newRotation;
-        }
-
-        // Supprimer anciens matchs de la ligue
-
-        // Sauvegarder tous les matchs
-        matchRepository.saveAll(allMatches);
-
-        List<Classement> initialClassement = clubs.stream()
+        // =====================================================
+        // ✅ 1️⃣ CRÉER LE CLASSEMENT D’ABORD
+        // =====================================================
+        List<Classement> classements = realClubs.stream()
                 .map(club -> {
                     Classement c = new Classement();
                     c.setLeague(league);
@@ -122,7 +71,60 @@ public class CalendarService {
                 })
                 .toList();
 
-        classementRepositoryInterface.saveAll(initialClassement);
+        classementRepositoryInterface.saveAll(classements);
+
+        // =====================================================
+        // ✅ 2️⃣ ENSUITE LE CALENDRIER
+        // =====================================================
+        List<Club> calendarClubs = new ArrayList<>(realClubs);
+        if (calendarClubs.size() % 2 != 0) {
+            calendarClubs.add(null); // bye week
+        }
+
+        int n = calendarClubs.size();
+        int totalRounds = (n - 1) * 2;
+        int matchesPerRound = n / 2;
+
+        List<Match> allMatches = new ArrayList<>();
+        List<Club> rotation = new ArrayList<>(calendarClubs);
+
+        for (int round = 1; round <= totalRounds; round++) {
+            for (int i = 0; i < matchesPerRound; i++) {
+                Club home = rotation.get(i);
+                Club away = rotation.get(n - 1 - i);
+
+                if (home == null || away == null) continue;
+
+                if (round > totalRounds / 2) {
+                    Club tmp = home;
+                    home = away;
+                    away = tmp;
+                }
+
+                Match match = new Match();
+                match.setLeague(league);
+                match.setHomeClub(home);
+                match.setAwayClub(away);
+                match.setJournee(round);
+                match.setHomeGoals(0);
+                match.setAwayGoals(0);
+                match.setPlayed(false);
+
+                allMatches.add(match);
+            }
+
+            // rotation
+            List<Club> newRotation = new ArrayList<>();
+            newRotation.add(rotation.get(0));
+            newRotation.add(rotation.get(rotation.size() - 1));
+            newRotation.addAll(rotation.subList(1, rotation.size() - 1));
+            rotation = newRotation;
+        }
+
+        matchRepository.saveAll(allMatches);
     }
-    }
+
+
+}
+
 

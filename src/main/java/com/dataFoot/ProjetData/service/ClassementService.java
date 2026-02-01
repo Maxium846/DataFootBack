@@ -2,6 +2,7 @@ package com.dataFoot.ProjetData.service;
 
 import com.dataFoot.ProjetData.dto.classement.ClassementDto;
 import com.dataFoot.ProjetData.model.Classement;
+import com.dataFoot.ProjetData.model.Club;
 import com.dataFoot.ProjetData.model.League;
 import com.dataFoot.ProjetData.model.Match;
 import com.dataFoot.ProjetData.repository.ClassementRepositoryInterface;
@@ -29,6 +30,7 @@ public class ClassementService {
 
     public List<ClassementDto> getClassementByLeague(Long leagueId) {
 
+        classementRepositoryInterface.deleteById(leagueId);
         League league = leagueRepositoryInterface.findById(leagueId)
                 .orElseThrow(() -> new RuntimeException("League introuvable"));
 
@@ -54,12 +56,34 @@ public class ClassementService {
                 ).toList();
 
     }
+    private Classement getOrCreateClassement(League league, Club club) {
+        return classementRepositoryInterface
+                .findByLeagueAndClub(league, club)
+                .orElseGet(() -> {
+                    Classement c = new Classement();
+                    c.setLeague(league);
+                    c.setClub(club);
+                    c.setPoints(0);
+                    c.setPlayed(0);
+                    c.setWins(0);
+                    c.setDraws(0);
+                    c.setLosses(0);
+                    c.setGoalsFor(0);
+                    c.setGoalsAgainst(0);
+                    c.setGoalDifference(0);
+                    return classementRepositoryInterface.save(c);
+                });
+    }
+
 
 
     @Transactional
     public void recalculateLeague(League league) {
 
-        List<Classement> classements = classementRepositoryInterface.findByLeague(league);
+        List<Classement> classements =
+                classementRepositoryInterface.findByLeague(league);
+
+        // Reset existants
         classements.forEach(c -> {
             c.setPoints(0);
             c.setPlayed(0);
@@ -71,14 +95,13 @@ public class ClassementService {
             c.setGoalDifference(0);
         });
 
-        List<Match> matches = matchRepositoryInterface.findByLeagueAndPlayedTrue(league);
+        List<Match> matches =
+                matchRepositoryInterface.findByLeagueAndPlayedTrue(league);
+
         for (Match m : matches) {
 
-            Classement home = classementRepositoryInterface
-                    .findByLeagueAndClub(league, m.getHomeClub());
-
-            Classement away = classementRepositoryInterface
-                    .findByLeagueAndClub(league, m.getAwayClub());
+            Classement home = getOrCreateClassement(league, m.getHomeClub());
+            Classement away = getOrCreateClassement(league, m.getAwayClub());
 
             home.setPlayed(home.getPlayed() + 1);
             away.setPlayed(away.getPlayed() + 1);
@@ -104,12 +127,11 @@ public class ClassementService {
                 away.setPoints(away.getPoints() + 1);
             }
         }
-        classements.forEach(c ->
-                c.setGoalDifference(c.getGoalsFor() - c.getGoalsAgainst())
-        );
 
         classementRepositoryInterface.saveAll(classements);
     }
+
+
 
     @Transactional
     public List<ClassementDto> updateMatchScoreAndRecalculate(Long matchId, int homeGoals, int awayGoals) {

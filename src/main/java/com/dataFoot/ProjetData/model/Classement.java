@@ -17,13 +17,13 @@ public class Classement {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "league_id", nullable = false)
-    private League league;
-
-    @ManyToOne
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "club_id", nullable = false)
     private Club club;
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "league_id", nullable = false)
+    private League league;
 
     private int points;
     private int played;

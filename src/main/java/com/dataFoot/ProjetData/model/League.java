@@ -29,6 +29,6 @@ public class League {
     private List<Club> clubs = new ArrayList<>();
 
     // Relation avec Classement
-    @OneToMany(mappedBy = "league", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "league")
     private List<Classement> classements = new ArrayList<>();
 }

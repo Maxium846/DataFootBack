@@ -34,6 +34,9 @@ public class ClubService {
 
         Club saved = clubRepositoryInterface.save(club);
 
+        leagueRepositoryInterface.findById(dto.getLeagueId()).orElseThrow(() -> new RuntimeException("League not found"));
+
+
         return ClubMapper.toDto(saved);
     }
 

@@ -29,14 +29,14 @@ public class Club {
     private List<Player> player = new ArrayList<>();
 
     // Relation avec League
-    @ManyToOne
-    @JoinColumn(name = "league_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "league_id", nullable = false)
     private League league;
 
     private String president;
     private String entraineur;
 
     // Relation avec Classement
-    @OneToMany(mappedBy = "club", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "club")
     private List<Classement> classements = new ArrayList<>();
 }
