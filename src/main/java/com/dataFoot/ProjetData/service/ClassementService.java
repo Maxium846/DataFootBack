@@ -1,6 +1,7 @@
 package com.dataFoot.ProjetData.service;
 
 import com.dataFoot.ProjetData.dto.classement.ClassementDto;
+import com.dataFoot.ProjetData.mapper.ClassementMapper;
 import com.dataFoot.ProjetData.model.Classement;
 import com.dataFoot.ProjetData.model.Club;
 import com.dataFoot.ProjetData.model.League;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class ClassementService {
@@ -27,35 +30,27 @@ public class ClassementService {
         this.classementRepositoryInterface = classementRepositoryInterface;
     }
 
+        public List<ClassementDto> getClassementByLeague(Long leagueId) {
 
-    public List<ClassementDto> getClassementByLeague(Long leagueId) {
+            // ✅ récupérer la ligue
+            League league = leagueRepositoryInterface.findById(leagueId)
+                    .orElseThrow(() -> new RuntimeException("League introuvable"));
 
-        classementRepositoryInterface.deleteById(leagueId);
-        League league = leagueRepositoryInterface.findById(leagueId)
-                .orElseThrow(() -> new RuntimeException("League introuvable"));
+            // ✅ récupérer les classements avec club chargé
+            List<Classement> classements = classementRepositoryInterface.findByLeagueIdWithClub(league.getId());
 
-        return classementRepositoryInterface.findByLeague(league)
-                .stream()
-                .map(c -> {
-                    ClassementDto dto = new ClassementDto();
-                    dto.setClubId(c.getClub().getId());
-                    dto.setClubName(c.getClub().getName());
-                    dto.setPlayed(c.getPlayed());
-                    dto.setWins(c.getWins());
-                    dto.setDraws(c.getDraws());
-                    dto.setLosses(c.getLosses());
-                    dto.setGoalsFor(c.getGoalsFor());
-                    dto.setGoalsAgainst(c.getGoalsAgainst());
-                    dto.setGoalDifference(c.getGoalDifference());
-                    dto.setPoints(c.getPoints());
-                    return dto;
-                })
-                .sorted(
-                        Comparator.comparingInt(ClassementDto::getPoints).reversed()
-                                .thenComparing(Comparator.comparingInt(ClassementDto::getGoalDifference).reversed())
-                ).toList();
+            // ✅ mapper et trier
+            return classements.stream()
+                    .map(ClassementMapper::toDto)
+                    .sorted(
+                            Comparator.comparingInt(ClassementDto::getPoints).reversed()
+                                    .thenComparing(Comparator.comparingInt(ClassementDto::getGoalDifference).reversed())
+                    )
+                    .toList();
+        }
 
-    }
+
+
     private Classement getOrCreateClassement(League league, Club club) {
         return classementRepositoryInterface
                 .findByLeagueAndClub(league, club)
@@ -81,10 +76,22 @@ public class ClassementService {
     public void recalculateLeague(League league) {
 
         List<Classement> classements =
-                classementRepositoryInterface.findByLeague(league);
+                classementRepositoryInterface.findByLeagueIdWithClub(league.getId());
 
-        // Reset existants
-        classements.forEach(c -> {
+        // ✅ Sécurité : il DOIT y avoir autant de classements que de clubs
+        if (classements.isEmpty()) {
+            throw new IllegalStateException("Classement non initialisé pour la ligue");
+        }
+
+        // 🔹 Map clubId -> classement
+        Map<Long, Classement> classementByClub = classements.stream()
+                .collect(Collectors.toMap(
+                        c -> c.getClub().getId(),
+                        c -> c
+                ));
+
+        // 🔹 Reset
+        classementByClub.values().forEach(c -> {
             c.setPoints(0);
             c.setPlayed(0);
             c.setWins(0);
@@ -100,8 +107,17 @@ public class ClassementService {
 
         for (Match m : matches) {
 
-            Classement home = getOrCreateClassement(league, m.getHomeClub());
-            Classement away = getOrCreateClassement(league, m.getAwayClub());
+            Classement home = classementByClub.get(m.getHomeClub().getId());
+            Classement away = classementByClub.get(m.getAwayClub().getId());
+
+            // 🔥 Si ça arrive → bug détecté immédiatement
+            if (home == null || away == null) {
+                throw new IllegalStateException(
+                        "Classement manquant pour un club : "
+                                + m.getHomeClub().getName() + " / "
+                                + m.getAwayClub().getName()
+                );
+            }
 
             home.setPlayed(home.getPlayed() + 1);
             away.setPlayed(away.getPlayed() + 1);
@@ -128,9 +144,14 @@ public class ClassementService {
             }
         }
 
-        classementRepositoryInterface.saveAll(classements);
-    }
+        // 🔹 Différence de buts
+        classementByClub.values().forEach(c ->
+                c.setGoalDifference(c.getGoalsFor() - c.getGoalsAgainst())
+        );
 
+        // ✅ saveAll OPTIONNEL (transaction + dirty checking)
+        classementRepositoryInterface.saveAll(classementByClub.values());
+    }
 
 
     @Transactional

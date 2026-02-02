@@ -14,6 +14,7 @@ import java.util.List;
 @ToString(exclude = {"player", "classements"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
+
 @Table(name = "clubs")
 public class Club {
 
@@ -24,7 +25,7 @@ public class Club {
     private String name;
 
     // Relation avec joueurs
-    @OneToMany(mappedBy = "club", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "club")
     @JsonManagedReference
     private List<Player> player = new ArrayList<>();
 

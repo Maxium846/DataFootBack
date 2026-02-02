@@ -13,8 +13,15 @@ import java.util.Optional;
 public interface ClubRepositoryInterface extends JpaRepository<Club,Long> {
 
 
-    List<Club> findByLeagueId(Long leagueId);
+        // Ta méthode existante
+        List<Club> findByLeagueId(Long leagueId);
+
+        // Nouvelle méthode pour forcer l'attachement complet des clubs
+        @Query("SELECT c FROM Club c JOIN FETCH c.league WHERE c.league.id = :leagueId")
+        List<Club> findAllByLeagueIdFetch(@Param("leagueId") Long leagueId);
+    }
 
 
 
-}
+
+

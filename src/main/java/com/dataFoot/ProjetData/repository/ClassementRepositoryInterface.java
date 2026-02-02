@@ -1,5 +1,6 @@
 package com.dataFoot.ProjetData.repository;
 
+import com.dataFoot.ProjetData.dto.classement.ClassementDto;
 import com.dataFoot.ProjetData.model.Classement;
 import com.dataFoot.ProjetData.model.Club;
 import com.dataFoot.ProjetData.model.League;
@@ -16,7 +17,14 @@ import java.util.Optional;
 @Repository
 public interface ClassementRepositoryInterface extends JpaRepository<Classement,Long> {
 
-    List<Classement> findByLeague(League leagueId);
+    @Query("""
+    SELECT c
+    FROM Classement c
+    JOIN FETCH c.club
+    WHERE c.league.id = :leagueId
+""")
+    List<Classement> findByLeagueIdWithClub(@Param("leagueId") Long leagueId);
+
     Optional<Classement> findByLeagueAndClub(League league, Club club);
     boolean existsByLeagueIdAndClubId(Long leagueId, Long clubId);
 
@@ -25,5 +33,7 @@ public interface ClassementRepositoryInterface extends JpaRepository<Classement,
     @Query("DELETE FROM Classement c WHERE c.league.id = :leagueId")
     void deleteByLeagueId(@Param("leagueId") Long leagueId);
 
+    }
 
-}
+
+
