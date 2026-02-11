@@ -19,12 +19,10 @@ import java.util.List;
 public class LeagueService {
 
     private final LeagueRepositoryInterface leagueRepositoryInterface;
-    private final MatchRepositoryInterface matchRepositoryInterface;
-    private final ClassementRepositoryInterface classementRepositoryInterface;
+
     public LeagueService(LeagueRepositoryInterface leagueRepositoryInterface, MatchRepositoryInterface matchRepositoryInterface, ClassementRepositoryInterface classementRepositoryInterface) {
         this.leagueRepositoryInterface = leagueRepositoryInterface;
-        this.matchRepositoryInterface = matchRepositoryInterface;
-        this.classementRepositoryInterface = classementRepositoryInterface;
+
     }
 
 

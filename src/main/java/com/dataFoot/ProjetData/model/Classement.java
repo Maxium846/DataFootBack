@@ -1,9 +1,7 @@
 package com.dataFoot.ProjetData.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "classement",
@@ -11,17 +9,21 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Classement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    // Plusieurs lignes de classement pourle meme club
     @JoinColumn(name = "club_id", nullable = false)
     private Club club;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    //plusieurs lignes de Classement pour la meme ligue
     @JoinColumn(name = "league_id", nullable = false)
     private League league;
 

@@ -20,5 +20,5 @@ public class MatchDto {
     private Integer awayGoals;
 
     private boolean played;
-    private Integer journey;
+    private Integer journee;
 }

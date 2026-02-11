@@ -19,7 +19,7 @@ public class MatchMapper {
         dto.setHomeGoals(match.getHomeGoals());
         dto.setAwayGoals(match.getAwayGoals());
         dto.setPlayed(match.isPlayed());
-        dto.setJourney(match.getJournee());
+        dto.setJournee(match.getJournee());
 
 
         return dto;

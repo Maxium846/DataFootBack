@@ -22,6 +22,7 @@ public interface ClassementRepositoryInterface extends JpaRepository<Classement,
     FROM Classement c
     JOIN FETCH c.club
     WHERE c.league.id = :leagueId
+    ORDER BY c.club.name ASC
 """)
     List<Classement> findByLeagueIdWithClub(@Param("leagueId") Long leagueId);
 

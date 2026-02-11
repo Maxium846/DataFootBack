@@ -23,7 +23,6 @@ public class PlayerStats {
     private int yellowCards;
     private int redCards;
     private int minutesPlayed;
-
     @OneToOne
     @JoinColumn(name = "player_id")
     private Player player;

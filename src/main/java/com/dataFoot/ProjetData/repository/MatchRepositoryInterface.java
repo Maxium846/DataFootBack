@@ -15,7 +15,7 @@ public interface MatchRepositoryInterface extends JpaRepository<Match,Long> {
     List<Match> findByLeagueIdOrderByMatchDateAsc(Long leagueId);
 
     List<Match> findByLeagueAndPlayedTrue(League leagueId);
-    List<Match> findByLeagueIdOrderByJourneeAsc(Long leagueId);
+    List<Match> findMatchesByLeagueIdOrderByJourneeAsc(Long leagueId);
     boolean existsByLeagueId(Long leagueId);
 
     @Transactional

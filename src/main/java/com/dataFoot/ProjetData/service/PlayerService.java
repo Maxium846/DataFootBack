@@ -10,6 +10,7 @@ import com.dataFoot.ProjetData.repository.PlayersRepositoryInterface;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PlayerService {
@@ -28,7 +29,8 @@ public class PlayerService {
         player.setFirstName(dto.getFirstName());
         player.setLastName(dto.getLastName());
         player.setPosition(dto.getPosition());
-        player.setAge(dto.getAge());
+        player.setDateDeNaissance(dto.getDateDeNaissance());
+        player.setNation(dto.getNation());
 
         // 2️⃣ Récupère le club correspondant à l'ID fourni
         Club club = clubRepository.findById(dto.getClubId())
@@ -41,11 +43,30 @@ public class PlayerService {
         return playerRepository.save(player);
     }
 
-    public List<PlayerInClubDto> allPlayer (PlayerInClubDto dto){
-        return playerRepository.findAll()
+    public List<PlayerInClubDto> allPlayer (Long clubId){
+
+        Optional<Club> club = clubRepository.findById(clubId);
+
+        return playerRepository.findByClubId(club.orElseThrow().getId())
                 .stream()
                 .map(PlayerMapper::toInClubDto)
                 .toList();
+    }
+
+    public PlayerInClubDto getPlayerById (long id){
+
+        Player player = playerRepository.findById(id).orElseThrow(()-> new RuntimeException("lid du joueur n'esiste pas "));
+
+        return PlayerMapper.toInClubDto(player);
+
+    }
+
+    public void deletePlayer(Long id){
+
+        if(!playerRepository.existsById(id)) {
+            throw (new RuntimeException("l'id n'existe pas "));
+        }
+            playerRepository.deleteById(id);
     }
 
 }

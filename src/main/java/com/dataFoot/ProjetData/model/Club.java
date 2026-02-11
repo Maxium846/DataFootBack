@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Getter
@@ -20,6 +21,7 @@ public class Club {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     private String name;
@@ -37,7 +39,14 @@ public class Club {
     private String president;
     private String entraineur;
 
+    private Integer DateCreation;
+
     // Relation avec Classement
     @OneToMany(mappedBy = "club")
     private List<Classement> classements = new ArrayList<>();
+
+
+    @OneToMany (mappedBy = "club")
+    private List <Player> players = new ArrayList<>();
+
 }

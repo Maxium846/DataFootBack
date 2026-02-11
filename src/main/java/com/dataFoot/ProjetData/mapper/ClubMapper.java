@@ -16,6 +16,9 @@ public class ClubMapper {
         dto.setLeagueId(
                 club.getLeague() != null ? club.getLeague().getId() : null
         );
+        dto.setEntraineur(club.getEntraineur());
+        dto.setPresident(club.getPresident());
+        dto.setDateCreation(club.getDateCreation());
         return dto;
     }
 
