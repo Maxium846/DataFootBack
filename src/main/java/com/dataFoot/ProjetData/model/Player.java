@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -33,7 +34,9 @@ public class Player {
     @JoinColumn(name = "club_id")
     @JsonBackReference
     private Club club;
+    @Column(nullable = true)
     private String nation;
+    @Column(nullable = true)
     private LocalDate dateDeNaissance;
 
     @OneToOne(mappedBy = "player", cascade = CascadeType.ALL)

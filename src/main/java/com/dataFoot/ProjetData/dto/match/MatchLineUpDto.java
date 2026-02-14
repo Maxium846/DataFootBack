@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class MatchLineUpDto {
 
+    private Long leagueId;
     private Long id;
     private Long playerId;
     private String playerName;

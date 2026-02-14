@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Optional;
-
 @Table(name = "match_lineup")
 @Entity
 @Data
@@ -23,6 +21,9 @@ public class MatchLineUp {
     @ManyToOne(optional = false)
     private Club club;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "league_id")
+    private  League league;
     private String position;
     private Boolean starter =true;
 }

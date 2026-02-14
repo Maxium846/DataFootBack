@@ -78,17 +78,12 @@ public class ClassementService {
         List<Classement> classements =
                 classementRepositoryInterface.findByLeagueIdWithClub(league.getId());
 
-        // ✅ Sécurité : il DOIT y avoir autant de classements que de clubs
         if (classements.isEmpty()) {
             throw new IllegalStateException("Classement non initialisé pour la ligue");
         }
 
-        // 🔹 Map clubId -> classement
         Map<Long, Classement> classementByClub = classements.stream()
-                .collect(Collectors.toMap(
-                        c -> c.getClub().getId(),
-                        c -> c
-                ));
+                .collect(Collectors.toMap(c -> c.getClub().getId(), c -> c));
 
         // 🔹 Reset
         classementByClub.values().forEach(c -> {
@@ -102,22 +97,15 @@ public class ClassementService {
             c.setGoalDifference(0);
         });
 
-        List<Match> matches =
-                matchRepositoryInterface.findByLeagueAndPlayedTrue(league);
+        // 🔹 Seuls les matchs joués avec scores valides
+        List<Match> matches = matchRepositoryInterface.findByLeagueAndPlayedTrue(league)
+                .stream()
+                .filter(m -> m.getHomeGoals() != null && m.getAwayGoals() != null)
+                .toList();
 
         for (Match m : matches) {
-
             Classement home = classementByClub.get(m.getHomeClub().getId());
             Classement away = classementByClub.get(m.getAwayClub().getId());
-
-            // 🔥 Si ça arrive → bug détecté immédiatement
-            if (home == null || away == null) {
-                throw new IllegalStateException(
-                        "Classement manquant pour un club : "
-                                + m.getHomeClub().getName() + " / "
-                                + m.getAwayClub().getName()
-                );
-            }
 
             home.setPlayed(home.getPlayed() + 1);
             away.setPlayed(away.getPlayed() + 1);
@@ -133,7 +121,7 @@ public class ClassementService {
                 home.setPoints(home.getPoints() + 3);
                 away.setLosses(away.getLosses() + 1);
             } else if (m.getHomeGoals() < m.getAwayGoals()) {
-                away.setWins(away.getWins() + 1);
+                away.setWins(away.getWins() + 3);
                 away.setPoints(away.getPoints() + 3);
                 home.setLosses(home.getLosses() + 1);
             } else {
@@ -144,14 +132,13 @@ public class ClassementService {
             }
         }
 
-        // 🔹 Différence de buts
         classementByClub.values().forEach(c ->
                 c.setGoalDifference(c.getGoalsFor() - c.getGoalsAgainst())
         );
 
-        // ✅ saveAll OPTIONNEL (transaction + dirty checking)
         classementRepositoryInterface.saveAll(classementByClub.values());
     }
+
 
 
     @Transactional

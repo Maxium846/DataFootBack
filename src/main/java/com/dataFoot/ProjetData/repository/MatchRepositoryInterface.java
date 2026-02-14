@@ -22,5 +22,12 @@ public interface MatchRepositoryInterface extends JpaRepository<Match,Long> {
     @Modifying
     @Query("DELETE FROM Match m WHERE m.league.id = :leagueId")
     void deleteByLeagueId(@Param("leagueId") Long leagueId);
+
+    boolean existsByLeagueAndHomeClubAndAwayClubAndJournee(
+            League league,
+            Club homeClub,
+            Club awayClub,
+            Integer journee
+    );
 }
 

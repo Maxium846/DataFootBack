@@ -19,6 +19,8 @@ public interface ClubRepositoryInterface extends JpaRepository<Club,Long> {
         // Nouvelle méthode pour forcer l'attachement complet des clubs
         @Query("SELECT c FROM Club c JOIN FETCH c.league WHERE c.league.id = :leagueId")
         List<Club> findAllByLeagueIdFetch(@Param("leagueId") Long leagueId);
+
+        Optional<Club> findByFplId(Integer fplId);
     }
 
 

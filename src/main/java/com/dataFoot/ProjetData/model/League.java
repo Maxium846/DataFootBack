@@ -11,6 +11,7 @@ import java.util.List;
 @ToString(exclude = {"clubs", "classements"})
 @Table(name = "championnats")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Data
 public class League {
 
 
@@ -30,57 +31,9 @@ public class League {
     @OneToMany(mappedBy = "league")
     private List<Classement> classements = new ArrayList<>();
 
-    public League(Long id, String name, String country, List<Club> clubs, List<Classement> classements) {
-        this.id = id;
-        this.name = name;
-        this.country = country;
-        this.clubs = clubs;
-        this.classements = classements;
-    }
+    @OneToMany(mappedBy = "league")
+    private List<MatchLineUp> matchLineUps = new ArrayList<>();
 
-    public League() {
-
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getCountry() {
-        return country;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
-    }
-
-    public List<Club> getClubs() {
-        return clubs;
-    }
-
-    public void setClubs(List<Club> clubs) {
-        this.clubs = clubs;
-    }
-
-    public List<Classement> getClassements() {
-        return classements;
-    }
-
-    public void setClassements(List<Classement> classements) {
-        this.classements = classements;
-    }
 
 
 }

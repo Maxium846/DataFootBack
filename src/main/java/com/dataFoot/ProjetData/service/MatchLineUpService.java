@@ -1,15 +1,14 @@
 package com.dataFoot.ProjetData.service;
 
 import com.dataFoot.ProjetData.dto.match.MatchLineUpDto;
+import com.dataFoot.ProjetData.model.League;
 import com.dataFoot.ProjetData.model.MatchLineUp;
-import com.dataFoot.ProjetData.repository.ClubRepositoryInterface;
-import com.dataFoot.ProjetData.repository.MatchLineUpRepository;
-import com.dataFoot.ProjetData.repository.MatchRepositoryInterface;
-import com.dataFoot.ProjetData.repository.PlayersRepositoryInterface;
+import com.dataFoot.ProjetData.repository.*;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,14 +19,17 @@ public class MatchLineUpService {
     private final PlayersRepositoryInterface playerRepo;
     private final ClubRepositoryInterface clubRepo;
 
+    private final LeagueRepositoryInterface leagueRepositoryInterface;
+
     public MatchLineUpService(MatchLineUpRepository lineupRepo,
                               MatchRepositoryInterface matchRepo,
                               PlayersRepositoryInterface playerRepo,
-                              ClubRepositoryInterface clubRepo) {
+                              ClubRepositoryInterface clubRepo, LeagueRepositoryInterface leagueRepositoryInterface) {
         this.lineupRepo = lineupRepo;
         this.matchRepo = matchRepo;
         this.playerRepo = playerRepo;
         this.clubRepo = clubRepo;
+        this.leagueRepositoryInterface = leagueRepositoryInterface;
     }
 
     // 🔹 Récupérer la composition d'un match
@@ -39,9 +41,10 @@ public class MatchLineUpService {
     }
 
     // 🔹 Ajouter une ligne dans la composition
-    public List<MatchLineUpDto> saveLineups(Long matchId, List<MatchLineUpDto> dtos) {
+    public List<MatchLineUpDto> saveLineups(Long matchId, List<MatchLineUpDto> dtos,Long leagueId) {
         List<MatchLineUpDto> savedDtos = new ArrayList<>();
-
+        League league = leagueRepositoryInterface.findById(leagueId)
+                .orElseThrow(() -> new RuntimeException("League not found"));
         for (MatchLineUpDto dto : dtos) {
             MatchLineUp lineup = new MatchLineUp();
             lineup.setMatch(matchRepo.getReferenceById(matchId));
@@ -49,7 +52,7 @@ public class MatchLineUpService {
             lineup.setClub(clubRepo.getReferenceById(dto.getClubId()));
             lineup.setPosition(dto.getPosition());
             lineup.setStarter(dto.getStarter() != null ? dto.getStarter() : true);
-
+            lineup.setLeague(league);
             MatchLineUp saved = lineupRepo.save(lineup);
             savedDtos.add(toDto(saved));
         }

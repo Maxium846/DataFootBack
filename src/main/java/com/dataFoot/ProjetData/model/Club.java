@@ -49,4 +49,7 @@ public class Club {
     @OneToMany (mappedBy = "club")
     private List <Player> players = new ArrayList<>();
 
+    @Column(unique = true)
+    private Integer fplId;
+
 }
