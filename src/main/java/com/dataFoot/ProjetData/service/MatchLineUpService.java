@@ -66,6 +66,7 @@ public class MatchLineUpService {
         MatchLineUpDto dto = new MatchLineUpDto();
         dto.setId(lineup.getId());
         dto.setPlayerId(lineup.getPlayer().getId());
+        dto.setLeagueId(lineup.getLeague().getId());
         dto.setPlayerName(lineup.getPlayer().getFirstName() + " " + lineup.getPlayer().getLastName());
         dto.setClubId(lineup.getClub().getId());
         dto.setPosition(lineup.getPosition());

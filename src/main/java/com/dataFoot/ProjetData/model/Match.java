@@ -47,6 +47,5 @@ public class Match {
     private Integer journee;
     @OneToMany(mappedBy = "match", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<MatchLineUp> lineups = new ArrayList<>();
-    @OneToMany(mappedBy = "match", cascade = CascadeType.ALL,orphanRemoval = true)
-    private List<MatchEvent> events = new ArrayList<>();
+
 }

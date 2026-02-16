@@ -4,12 +4,12 @@ import lombok.Data;
 
 @Data
 public class PlayerStatDto {
-    private Long id;
     private int matchesPlayed;
-    private int goals;
-    private int assists;
-    private int yellowCards;
-    private int redCards;
-    private int minutesPlayed;
-    private Long joueurId;
+    private Long goals;
+    private Long assists;
+    private Long yellowCard;
+    private Long redCard;
+    private Long minutesPlayed;
+    private Long playerId;
+    private long totalEvents;
 }

@@ -18,11 +18,11 @@ public class PlayerStats {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private int matchesPlayed;
-    private int goals;
-    private int assists;
-    private int yellowCards;
-    private int redCards;
-    private int minutesPlayed;
+    private Long goals;
+    private Long assists;
+    private Long yellowCards;
+    private Long redCards;
+    private Long minutesPlayed;
     @OneToOne
     @JoinColumn(name = "player_id")
     private Player player;

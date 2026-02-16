@@ -51,10 +51,4 @@ public class Player {
     @OneToMany(mappedBy = "player")
     private List<MatchLineUp> matchLineUps = new ArrayList<>();
 
-    @OneToMany(mappedBy = "player")
-    private List<MatchEvent> events = new ArrayList<>();
-
-    @OneToMany(mappedBy = "assistPlayer")
-    private List<MatchEvent> assists = new ArrayList<>();
-
 }
