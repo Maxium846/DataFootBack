@@ -1,10 +1,6 @@
 package com.dataFoot.ProjetData.controller;
-
-import com.dataFoot.ProjetData.model.Match;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.BufferedReader;
@@ -42,7 +38,7 @@ public class FplController {
         String teamsJson = fetchUrl("https://fantasy.premierleague.com/api/bootstrap-static/");
         return ResponseEntity.ok(teamsJson);
     }
-
-
-
 }
+
+
+

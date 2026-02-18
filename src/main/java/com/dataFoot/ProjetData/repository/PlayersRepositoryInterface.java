@@ -5,9 +5,14 @@ import com.dataFoot.ProjetData.model.Player;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PlayersRepositoryInterface extends JpaRepository<Player,Long> {
 
 
     List<Player> findByClubId(Long clubId);
+
+Optional<Player> findByIdFpl(Integer fplId);
+
+    void deleteByClub_League_Id(Long leagueId);
 }

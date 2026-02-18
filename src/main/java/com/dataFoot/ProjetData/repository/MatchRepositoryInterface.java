@@ -14,6 +14,7 @@ import java.util.List;
 public interface MatchRepositoryInterface extends JpaRepository<Match,Long> {
     List<Match> findByLeagueIdOrderByMatchDateAsc(Long leagueId);
 
+    List<Match> findMatchByLeagueIdAndPlayedTrue(Long leagueId);
     List<Match> findByLeagueAndPlayedTrue(League leagueId);
     List<Match> findMatchesByLeagueIdOrderByJourneeAsc(Long leagueId);
     boolean existsByLeagueId(Long leagueId);

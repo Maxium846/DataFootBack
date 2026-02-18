@@ -1,10 +1,12 @@
 package com.dataFoot.ProjetData.controller;
 
 import com.dataFoot.ProjetData.dto.player.PlayerDto;
+import com.dataFoot.ProjetData.dto.player.PlayerFplDto;
 import com.dataFoot.ProjetData.dto.player.PlayerInClubDto;
 import com.dataFoot.ProjetData.model.Player;
 import com.dataFoot.ProjetData.repository.PlayersRepositoryInterface;
 import com.dataFoot.ProjetData.service.PlayerService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,6 +41,11 @@ public class PlayerController {
     public void deletePlayers (@PathVariable  Long id){
 
          playerService.deletePlayer(id);
+    }
+
+    @PostMapping("/generate-players/{leagueId}")
+    public ResponseEntity<List<PlayerFplDto>> generatePlayers(@PathVariable Long leagueId) {
+        return ResponseEntity.ok(playerService.generateOrUpdatePlayers(leagueId));
     }
 
 

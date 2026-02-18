@@ -25,8 +25,10 @@ public class CalendarService {
 
     private final FplService fplService;
      private final MatchLineUpRepository matchLineUpRepository;
+     private final MatchService matchService;
+     private final ClassementService classementService;
 
-    public CalendarService(LeagueRepositoryInterface leagueRepositoryInterface, ClassementRepositoryInterface classementRepositoryInterface, ClubRepositoryInterface clubRepositoryInterface, MatchRepositoryInterface matchRepositoryInterface, FplService fplService, MatchLineUpRepository matchLineUpRepository) {
+    public CalendarService(LeagueRepositoryInterface leagueRepositoryInterface, ClassementRepositoryInterface classementRepositoryInterface, ClubRepositoryInterface clubRepositoryInterface, MatchRepositoryInterface matchRepositoryInterface, FplService fplService, MatchLineUpRepository matchLineUpRepository, MatchService matchService, ClassementService classementService) {
 
         this.leagueRepositoryInterface = leagueRepositoryInterface;
         this.classementRepositoryInterface = classementRepositoryInterface;
@@ -34,6 +36,8 @@ public class CalendarService {
         this.matchRepositoryInterface = matchRepositoryInterface;
         this.fplService = fplService;
         this.matchLineUpRepository = matchLineUpRepository;
+        this.matchService = matchService;
+        this.classementService = classementService;
     }
 
     // Si une des méthode ne marche pas , cela plante et n'enregistre rien en base
@@ -225,6 +229,7 @@ public class CalendarService {
             match.setMatchDate(fixture.getKickoffTime().toLocalDate());
             match.setAwayGoals(fixture.getTeamAwayScore());
             match.setHomeGoals(fixture.getTeamHomeScore());
+            match.setPlayed(fixture.getFinished());
 
             // Tous les matchs sont initialisés comme non joués
 
@@ -233,7 +238,11 @@ public class CalendarService {
             createdCount++;
         }
 
+
+        classementService.recalculateLeague(league);
+
         return createdCount + " matchs importés avec succès !";
+
     }
 
 }

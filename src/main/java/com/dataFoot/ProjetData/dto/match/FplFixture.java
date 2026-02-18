@@ -18,6 +18,7 @@ public class FplFixture {
     @JsonProperty("kickoff_time")
     private OffsetDateTime kickoffTime;
 
+    @JsonProperty("finished")
     private Boolean finished;
     @JsonProperty("team_a_score")
     private Integer teamAwayScore;

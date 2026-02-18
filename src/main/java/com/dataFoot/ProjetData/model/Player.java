@@ -39,6 +39,7 @@ public class Player {
     @Column(nullable = true)
     private LocalDate dateDeNaissance;
 
+
     @OneToOne(mappedBy = "player", cascade = CascadeType.ALL)
     private PlayerStats playerStats;
 
@@ -50,5 +51,7 @@ public class Player {
     }
     @OneToMany(mappedBy = "player")
     private List<MatchLineUp> matchLineUps = new ArrayList<>();
+
+    private Integer idFpl;
 
 }
