@@ -53,6 +53,9 @@ public class CalendarService {
 
         // 🔹 Création du classement initial
         List<Classement> classements = new ArrayList<>();
+
+
+        //pour chaque objet club contenu dans la liste clubs, creer un nouvel objet classement
         for (Club club : clubs) {
             Classement c = new Classement();
             c.setLeague(league);
@@ -207,7 +210,7 @@ public class CalendarService {
             // Ignorer les matchs sans journée assignée
             if (fixture.getEvent() == null) continue;
 
-            // Récupérer les clubs via fplId
+            // Récupérer les clubs domicile et extérieur pour chaque match
             Club home = clubRepositoryInterface.findByFplId(fixture.getTeamHomeId())
                     .orElseThrow(() -> new RuntimeException("Home club not found: " + fixture.getTeamHomeId()));
             Club away = clubRepositoryInterface.findByFplId(fixture.getTeamAwayId())
@@ -220,10 +223,10 @@ public class CalendarService {
             match.setAwayClub(away);
             match.setJournee(fixture.getEvent());
             match.setMatchDate(fixture.getKickoffTime().toLocalDate());
+            match.setAwayGoals(fixture.getTeamAwayScore());
+            match.setHomeGoals(fixture.getTeamHomeScore());
 
             // Tous les matchs sont initialisés comme non joués
-            match.setPlayed(false);
-
 
             // Sauvegarde
             matchRepositoryInterface.save(match);

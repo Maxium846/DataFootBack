@@ -32,20 +32,15 @@ public class ClassementService {
 
         public List<ClassementDto> getClassementByLeague(Long leagueId) {
 
-            // ✅ récupérer la ligue
+            //  récupérer la ligue
             League league = leagueRepositoryInterface.findById(leagueId)
                     .orElseThrow(() -> new RuntimeException("League introuvable"));
 
-            // ✅ récupérer les classements avec club chargé
+            //  récupérer les classements avec club chargé
             List<Classement> classements = classementRepositoryInterface.findByLeagueIdWithClub(league.getId());
 
-            // ✅ mapper et trier
             return classements.stream()
                     .map(ClassementMapper::toDto)
-                    .sorted(
-                            Comparator.comparingInt(ClassementDto::getPoints).reversed()
-                                    .thenComparing(Comparator.comparingInt(ClassementDto::getGoalDifference).reversed())
-                    )
                     .toList();
         }
 

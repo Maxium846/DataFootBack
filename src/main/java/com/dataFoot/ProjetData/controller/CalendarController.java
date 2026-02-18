@@ -7,13 +7,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/calendar")
 public class CalendarController {
 
-
 private final CalendarService calendarService;
 
     public CalendarController(CalendarService calendarService) {
         this.calendarService = calendarService;
     }
-
 
     @PostMapping("/generate-from-pl/{leagueId}")
     public String generateFromPL(@PathVariable Long leagueId) {

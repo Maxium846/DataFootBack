@@ -23,7 +23,6 @@ public class ClassementController {
 
     @GetMapping("/{leagueId}/classement")
     public List<ClassementDto> getClassement(@PathVariable Long leagueId){
-        // ✅ retourne déjà des DTO, pas besoin de mapper ici
         return classementService.getClassementByLeague(leagueId);
     }
 
