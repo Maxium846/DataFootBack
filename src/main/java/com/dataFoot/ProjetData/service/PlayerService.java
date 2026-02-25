@@ -7,9 +7,9 @@ import com.dataFoot.ProjetData.mapper.PlayerMapper;
 import com.dataFoot.ProjetData.model.Club;
 import com.dataFoot.ProjetData.model.League;
 import com.dataFoot.ProjetData.model.Player;
-import com.dataFoot.ProjetData.repository.ClubRepositoryInterface;
-import com.dataFoot.ProjetData.repository.LeagueRepositoryInterface;
-import com.dataFoot.ProjetData.repository.PlayersRepositoryInterface;
+import com.dataFoot.ProjetData.repository.ClubRepository;
+import com.dataFoot.ProjetData.repository.LeagueRepository;
+import com.dataFoot.ProjetData.repository.PlayersRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
@@ -28,20 +28,18 @@ import java.util.stream.Collectors;
 @Service
 public class PlayerService {
 
-    private final PlayersRepositoryInterface playerRepository;
-    private final ClubRepositoryInterface clubRepository;
+    private final PlayersRepository playerRepository;
+    private final ClubRepository clubRepository;
 
-    private final LeagueRepositoryInterface leagueRepositoryInterface;
+    private final LeagueRepository leagueRepository;
     private final ObjectMapper objectMapper;
-    private final ClubRepositoryInterface clubRepositoryInterface;
 
 
-    public PlayerService(PlayersRepositoryInterface playerRepository, ClubRepositoryInterface clubRepository, LeagueRepositoryInterface leagueRepositoryInterface, ObjectMapper objectMapper, ClubRepositoryInterface clubRepositoryInterface) {
+    public PlayerService(PlayersRepository playerRepository, ClubRepository clubRepository, LeagueRepository leagueRepository, ObjectMapper objectMapper, ClubRepository clubRepositoryInterface) {
         this.playerRepository = playerRepository;
         this.clubRepository = clubRepository;
-        this.leagueRepositoryInterface = leagueRepositoryInterface;
+        this.leagueRepository = leagueRepository;
         this.objectMapper = objectMapper;
-        this.clubRepositoryInterface = clubRepositoryInterface;
     }
 
     public Player createPlayer(PlayerDto dto) {
@@ -93,7 +91,7 @@ public class PlayerService {
 @Transactional
     public List<PlayerFplDto> generateOrUpdatePlayers(Long leagueId) {
 
-        League league = leagueRepositoryInterface.findById(leagueId)
+        League league = leagueRepository.findById(leagueId)
                 .orElseThrow(() -> new RuntimeException("League not found"));
 
         List<PlayerFplDto> result = new ArrayList<>();
@@ -126,7 +124,7 @@ public class PlayerService {
                     birthDate = LocalDate.parse(birthNode.asText());
                 }
                 // Trouver le club correspondant
-                Club club = clubRepositoryInterface.findByFplId(teamFplId)
+                Club club = clubRepository.findByFplId(teamFplId)
                         .orElseThrow(() -> new RuntimeException("Club not found for FPL ID: " + teamFplId));
 
                 // Vérifier si joueur existe

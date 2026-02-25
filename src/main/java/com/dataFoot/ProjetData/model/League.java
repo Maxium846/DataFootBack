@@ -11,7 +11,8 @@ import java.util.List;
 @ToString(exclude = {"clubs", "classements"})
 @Table(name = "championnats")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Data
+@Getter
+@Setter
 public class League {
 
 
@@ -27,7 +28,6 @@ public class League {
     @OneToMany(mappedBy = "league", cascade = CascadeType.REMOVE)
     private List<Club> clubs = new ArrayList<>();
 
-    // Relation avec Classement : Une ligue contient plusieurs LIGNES de classement et chaque ligne de classement appartient a une seul ligue
     @OneToMany(mappedBy = "league")
     private List<Classement> classements = new ArrayList<>();
 

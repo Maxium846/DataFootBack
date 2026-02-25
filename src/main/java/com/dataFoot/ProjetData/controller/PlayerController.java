@@ -4,7 +4,6 @@ import com.dataFoot.ProjetData.dto.player.PlayerDto;
 import com.dataFoot.ProjetData.dto.player.PlayerFplDto;
 import com.dataFoot.ProjetData.dto.player.PlayerInClubDto;
 import com.dataFoot.ProjetData.model.Player;
-import com.dataFoot.ProjetData.repository.PlayersRepositoryInterface;
 import com.dataFoot.ProjetData.service.PlayerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

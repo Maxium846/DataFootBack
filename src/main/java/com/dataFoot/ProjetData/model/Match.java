@@ -47,5 +47,8 @@ public class Match {
     private Integer journee;
     @OneToMany(mappedBy = "match", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<MatchLineUp> lineups = new ArrayList<>();
-
+    @Column(unique = true)
+    private Long fplId;
+    private Integer homeClubFplId;
+    private Integer awayClubFplId;
 }

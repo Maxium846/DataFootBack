@@ -6,13 +6,12 @@ import com.dataFoot.ProjetData.model.Classement;
 import com.dataFoot.ProjetData.model.Club;
 import com.dataFoot.ProjetData.model.League;
 import com.dataFoot.ProjetData.model.Match;
-import com.dataFoot.ProjetData.repository.ClassementRepositoryInterface;
-import com.dataFoot.ProjetData.repository.LeagueRepositoryInterface;
-import com.dataFoot.ProjetData.repository.MatchRepositoryInterface;
+import com.dataFoot.ProjetData.repository.ClassementRepository;
+import com.dataFoot.ProjetData.repository.LeagueRepository;
+import com.dataFoot.ProjetData.repository.MatchRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -20,24 +19,24 @@ import java.util.stream.Collectors;
 @Service
 public class ClassementService {
 
-    private final LeagueRepositoryInterface leagueRepositoryInterface;
-    private final MatchRepositoryInterface matchRepositoryInterface;
-    private final ClassementRepositoryInterface classementRepositoryInterface;
+    private final LeagueRepository leagueRepository;
+    private final MatchRepository matchRepository;
+    private final ClassementRepository classementRepository;
 
-    public ClassementService(LeagueRepositoryInterface leagueRepositoryInterface, MatchRepositoryInterface matchRepositoryInterface, ClassementRepositoryInterface classementRepositoryInterface) {
-        this.leagueRepositoryInterface = leagueRepositoryInterface;
-        this.matchRepositoryInterface = matchRepositoryInterface;
-        this.classementRepositoryInterface = classementRepositoryInterface;
+    public ClassementService(LeagueRepository leagueRepository, MatchRepository matchRepository, ClassementRepository classementRepository) {
+        this.leagueRepository = leagueRepository;
+        this.matchRepository = matchRepository;
+        this.classementRepository = classementRepository;
     }
 
         public List<ClassementDto> getClassementByLeague(Long leagueId) {
 
             //  récupérer la ligue
-            League league = leagueRepositoryInterface.findById(leagueId)
+            League league = leagueRepository.findById(leagueId)
                     .orElseThrow(() -> new RuntimeException("League introuvable"));
 
             //  récupérer les classements avec club chargé
-            List<Classement> classements = classementRepositoryInterface.findByLeagueIdWithClub(league.getId());
+            List<Classement> classements = classementRepository.findByLeagueIdWithClub(league.getId());
 
             return classements.stream()
                     .map(ClassementMapper::toDto)
@@ -47,7 +46,7 @@ public class ClassementService {
 
 
     private Classement getOrCreateClassement(League league, Club club) {
-        return classementRepositoryInterface
+        return classementRepository
                 .findByLeagueAndClub(league, club)
                 .orElseGet(() -> {
                     Classement c = new Classement();
@@ -61,7 +60,7 @@ public class ClassementService {
                     c.setGoalsFor(0);
                     c.setGoalsAgainst(0);
                     c.setGoalDifference(0);
-                    return classementRepositoryInterface.save(c);
+                    return classementRepository.save(c);
                 });
     }
 
@@ -71,7 +70,7 @@ public class ClassementService {
     public void recalculateLeague(League league) {
 
         List<Classement> classements =
-                classementRepositoryInterface.findByLeagueIdWithClub(league.getId());
+                classementRepository.findByLeagueIdWithClub(league.getId());
 
         if (classements.isEmpty()) {
             throw new IllegalStateException("Classement non initialisé pour la ligue");
@@ -93,7 +92,7 @@ public class ClassementService {
         });
 
         // 🔹 Seuls les matchs joués avec scores valides
-        List<Match> matches = matchRepositoryInterface.findByLeagueAndPlayedTrue(league)
+        List<Match> matches = matchRepository.findByLeagueAndPlayedTrue(league)
                 .stream()
                 .filter(m -> m.getHomeGoals() != null && m.getAwayGoals() != null)
                 .toList();
@@ -131,20 +130,20 @@ public class ClassementService {
                 c.setGoalDifference(c.getGoalsFor() - c.getGoalsAgainst())
         );
 
-        classementRepositoryInterface.saveAll(classementByClub.values());
+        classementRepository.saveAll(classementByClub.values());
     }
 
 
 
     @Transactional
     public List<ClassementDto> updateMatchScoreAndRecalculate(Long matchId, int homeGoals, int awayGoals) {
-        Match match = matchRepositoryInterface.findById(matchId)
+        Match match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new RuntimeException("Match introuvable"));
 
         match.setHomeGoals(homeGoals);
         match.setAwayGoals(awayGoals);
         match.setPlayed(true);
-        matchRepositoryInterface.save(match);
+        matchRepository.save(match);
 
         // Recalculer le classement pour la ligue du match
         recalculateLeague(match.getLeague());

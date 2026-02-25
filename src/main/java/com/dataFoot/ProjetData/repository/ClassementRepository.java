@@ -1,6 +1,5 @@
 package com.dataFoot.ProjetData.repository;
 
-import com.dataFoot.ProjetData.dto.classement.ClassementDto;
 import com.dataFoot.ProjetData.model.Classement;
 import com.dataFoot.ProjetData.model.Club;
 import com.dataFoot.ProjetData.model.League;
@@ -15,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ClassementRepositoryInterface extends JpaRepository<Classement,Long> {
+public interface ClassementRepository extends JpaRepository<Classement,Long> {
 
     @Query("""
     SELECT c

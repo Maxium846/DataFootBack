@@ -1,15 +1,12 @@
 package com.dataFoot.ProjetData.controller;
 
-import com.dataFoot.ProjetData.dto.club.ClubDetailDto;
 import com.dataFoot.ProjetData.dto.club.ClubDto;
-import com.dataFoot.ProjetData.dto.club.ClubDtoFpl;
-import com.dataFoot.ProjetData.model.Club;
+import com.dataFoot.ProjetData.dto.fpl.ClubDtoFpl;
 import com.dataFoot.ProjetData.service.ClubService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 

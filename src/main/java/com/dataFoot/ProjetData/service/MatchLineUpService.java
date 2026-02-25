@@ -8,28 +8,27 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class MatchLineUpService {
 
     private final MatchLineUpRepository lineupRepo;
-    private final MatchRepositoryInterface matchRepo;
-    private final PlayersRepositoryInterface playerRepo;
-    private final ClubRepositoryInterface clubRepo;
+    private final MatchRepository matchRepo;
+    private final PlayersRepository playerRepo;
+    private final ClubRepository clubRepo;
 
-    private final LeagueRepositoryInterface leagueRepositoryInterface;
+    private final LeagueRepository leagueRepository;
 
     public MatchLineUpService(MatchLineUpRepository lineupRepo,
-                              MatchRepositoryInterface matchRepo,
-                              PlayersRepositoryInterface playerRepo,
-                              ClubRepositoryInterface clubRepo, LeagueRepositoryInterface leagueRepositoryInterface) {
+                              MatchRepository matchRepo,
+                              PlayersRepository playerRepo,
+                              ClubRepository clubRepo, LeagueRepository leagueRepository) {
         this.lineupRepo = lineupRepo;
         this.matchRepo = matchRepo;
         this.playerRepo = playerRepo;
         this.clubRepo = clubRepo;
-        this.leagueRepositoryInterface = leagueRepositoryInterface;
+        this.leagueRepository = leagueRepository;
     }
 
     // 🔹 Récupérer la composition d'un match
@@ -43,7 +42,7 @@ public class MatchLineUpService {
     // 🔹 Ajouter une ligne dans la composition
     public List<MatchLineUpDto> saveLineups(Long matchId, List<MatchLineUpDto> dtos,Long leagueId) {
         List<MatchLineUpDto> savedDtos = new ArrayList<>();
-        League league = leagueRepositoryInterface.findById(leagueId)
+        League league = leagueRepository.findById(leagueId)
                 .orElseThrow(() -> new RuntimeException("League not found"));
         for (MatchLineUpDto dto : dtos) {
             MatchLineUp lineup = new MatchLineUp();

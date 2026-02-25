@@ -1,13 +1,12 @@
 package com.dataFoot.ProjetData.service;
 
 import com.dataFoot.ProjetData.dto.club.ClubDto;
-import com.dataFoot.ProjetData.dto.club.ClubDtoFpl;
+import com.dataFoot.ProjetData.dto.fpl.ClubDtoFpl;
 import com.dataFoot.ProjetData.mapper.ClubMapper;
 import com.dataFoot.ProjetData.model.Club;
 import com.dataFoot.ProjetData.model.League;
-import com.dataFoot.ProjetData.repository.ClubRepositoryInterface;
-import com.dataFoot.ProjetData.repository.LeagueRepositoryInterface;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.dataFoot.ProjetData.repository.ClubRepository;
+import com.dataFoot.ProjetData.repository.LeagueRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
@@ -23,21 +22,21 @@ import java.util.stream.Collectors;
 @Service
 public class ClubService {
 
-    private final ClubRepositoryInterface clubRepositoryInterface;
-    private final LeagueRepositoryInterface leagueRepositoryInterface;
+    private final ClubRepository clubRepository;
+    private final LeagueRepository leagueRepository;
     private final ObjectMapper objectMapper;
 
 
 
-    public ClubService(ClubRepositoryInterface clubRepositoryInterface, LeagueRepositoryInterface leagueRepositoryInterface, ObjectMapper objectMapper) {
-        this.clubRepositoryInterface = clubRepositoryInterface;
-        this.leagueRepositoryInterface = leagueRepositoryInterface;
+    public ClubService(ClubRepository clubRepository, LeagueRepository leagueRepository, ObjectMapper objectMapper) {
+        this.clubRepository = clubRepository;
+        this.leagueRepository = leagueRepository;
         this.objectMapper = objectMapper;
     }
 
     public ClubDto createClub(ClubDto dto) {
 
-        League league = leagueRepositoryInterface.findById(dto.getLeagueId())
+        League league = leagueRepository.findById(dto.getLeagueId())
                 .orElseThrow(() -> new RuntimeException("League not found"));
 
 
@@ -45,9 +44,9 @@ public class ClubService {
         //crée-moi un objet Club prêt à être sauvegardé.
         Club club = ClubMapper.toEntity(dto, league);
 
-        Club saved = clubRepositoryInterface.save(club);
+        Club saved = clubRepository.save(club);
 
-        leagueRepositoryInterface.findById(dto.getLeagueId()).orElseThrow(() -> new RuntimeException("League not found"));
+        leagueRepository.findById(dto.getLeagueId()).orElseThrow(() -> new RuntimeException("League not found"));
 
 
         return ClubMapper.toDto(saved);
@@ -55,38 +54,38 @@ public class ClubService {
 
 
     public List<ClubDto> findAll() {
-        return clubRepositoryInterface.findAll()
+        return clubRepository.findAll()
                 .stream()
                 .map(ClubMapper::toDto)
                 .toList();
     }
 
     public ClubDto findById(Long id) {
-        Club club = clubRepositoryInterface.findById(id)
+        Club club = clubRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Club not found"));
         return ClubMapper.toDto(club);
     }
 
     public ClubDto update(Long id, ClubDto dto) {
-        Club club = clubRepositoryInterface.findById(id)
+        Club club = clubRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Club not found"));
 
         ClubMapper.updateEntity(club, dto);
-        Club updated = clubRepositoryInterface.save(club);
+        Club updated = clubRepository.save(club);
 
         return ClubMapper.toDto(updated);
     }
     public void delete(Long id) {
-        if (!clubRepositoryInterface.existsById(id)) {
+        if (!clubRepository.existsById(id)) {
             throw new RuntimeException("Club not found");
         }
-        clubRepositoryInterface.deleteById(id);
+        clubRepository.deleteById(id);
     }
 
     public List<ClubDtoFpl> generateOrUpdateClubs(Long leagueId) {
         List<ClubDtoFpl> result = new ArrayList<>();
 
-        League league = leagueRepositoryInterface.findById(leagueId)
+        League league = leagueRepository.findById(leagueId)
                 .orElseThrow(() -> new RuntimeException("League not found"));
 
         try {
@@ -102,7 +101,7 @@ public class ClubService {
                 String name = teamNode.get("name").asText();
 
                 // Vérifie si le club existe
-                Club club = clubRepositoryInterface.findByFplId(fplId)
+                Club club = clubRepository.findByFplId(fplId)
                         .orElseGet(() -> new Club());
 
                 club.setFplId(fplId);
@@ -110,13 +109,12 @@ public class ClubService {
                 club.setLeague(league);
 
                 // Sauvegarde en DB
-                Club savedClub = clubRepositoryInterface.save(club);
+                Club savedClub = clubRepository.save(club);
 
                 // Ajoute au DTO
                 result.add(new ClubDtoFpl(
                         savedClub.getId(),
                         savedClub.getName(),
-                        savedClub.getFplId(),
                         savedClub.getLeague() != null ? savedClub.getLeague().getId() : null));
             }
 

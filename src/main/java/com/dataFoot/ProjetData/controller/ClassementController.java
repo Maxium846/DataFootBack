@@ -21,6 +21,7 @@ public class ClassementController {
         this.classementService = classementService;
     }
 
+    //ok
     @GetMapping("/{leagueId}/classement")
     public List<ClassementDto> getClassement(@PathVariable Long leagueId){
         return classementService.getClassementByLeague(leagueId);

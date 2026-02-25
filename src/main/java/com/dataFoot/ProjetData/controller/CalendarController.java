@@ -15,7 +15,7 @@ private final CalendarService calendarService;
 
     @PostMapping("/generate-from-pl/{leagueId}")
     public String generateFromPL(@PathVariable Long leagueId) {
-        return calendarService.generateFromPL(leagueId);
+        return calendarService.generateCalendarFromPl(leagueId);
     }
 
 }

@@ -38,4 +38,5 @@ public class MatchEventController {
         return ResponseEntity.ok(eventService.getEventsByMatchId(matchId));
     }
 
+
 }

@@ -1,6 +1,6 @@
 package com.dataFoot.ProjetData.service;
 
-import com.dataFoot.ProjetData.dto.match.FplFixture;
+import com.dataFoot.ProjetData.dto.fpl.MatchDtoFpl;
 import com.dataFoot.ProjetData.model.FplTeam;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -16,8 +16,8 @@ public class FplService {
     private static final String BOOTSTRAP_URL = "https://fantasy.premierleague.com/api/bootstrap-static/";
 
     // récupère tous les matchs de la saison
-    public List<FplFixture> getFixtures() {
-        FplFixture[] fixtures = restTemplate.getForObject(FIXTURES_URL, FplFixture[].class);
+    public List<MatchDtoFpl> getFixtures() {
+        MatchDtoFpl[] fixtures = restTemplate.getForObject(FIXTURES_URL, MatchDtoFpl[].class);
         return Arrays.asList(fixtures);
     }
 

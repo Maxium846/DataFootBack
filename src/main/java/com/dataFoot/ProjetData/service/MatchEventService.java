@@ -5,20 +5,19 @@ import com.dataFoot.ProjetData.dto.player.PlayerStatDto;
 import com.dataFoot.ProjetData.enumeration.EventType;
 import com.dataFoot.ProjetData.model.MatchEvent;
 import com.dataFoot.ProjetData.repository.MatchEventRepository;
-import com.dataFoot.ProjetData.repository.MatchRepositoryInterface;
-import com.dataFoot.ProjetData.repository.PlayersRepositoryInterface;
+import com.dataFoot.ProjetData.repository.MatchRepository;
+import com.dataFoot.ProjetData.repository.PlayersRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class MatchEventService {
 
     private final MatchEventRepository eventRepo;
     public MatchEventService(MatchEventRepository eventRepo,
-                             MatchRepositoryInterface matchRepo,
-                             PlayersRepositoryInterface playerRepo) {
+                             MatchRepository matchRepo,
+                             PlayersRepository playerRepo) {
         this.eventRepo = eventRepo;
 
     }

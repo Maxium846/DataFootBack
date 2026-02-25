@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface MatchRepositoryInterface extends JpaRepository<Match,Long> {
+public interface MatchRepository extends JpaRepository<Match,Long> {
     List<Match> findByLeagueIdOrderByMatchDateAsc(Long leagueId);
 
     List<Match> findMatchByLeagueIdAndPlayedTrue(Long leagueId);

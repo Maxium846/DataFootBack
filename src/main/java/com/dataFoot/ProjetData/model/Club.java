@@ -46,9 +46,6 @@ public class Club {
     private List<Classement> classements = new ArrayList<>();
 
 
-    @OneToMany (mappedBy = "club")
-    private List <Player> players = new ArrayList<>();
-
     @Column(unique = true)
     private Integer fplId;
 
