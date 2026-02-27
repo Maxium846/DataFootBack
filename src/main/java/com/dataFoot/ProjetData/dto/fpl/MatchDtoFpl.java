@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.time.OffsetDateTime;
+import java.util.List;
+
 @Data
 public class MatchDtoFpl {
 
@@ -28,6 +30,9 @@ public class MatchDtoFpl {
     private Integer teamAwayScore;
     @JsonProperty("team_h_score")
     private Integer teamHomeScore;
+
+    @JsonProperty("stats")
+    private List<StatFplDto> stats;
 
 
 }

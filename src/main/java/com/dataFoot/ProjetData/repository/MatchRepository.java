@@ -30,5 +30,8 @@ public interface MatchRepository extends JpaRepository<Match,Long> {
             Club awayClub,
             Integer journee
     );
+
+
+    List<Match> findByLeagueId(Long leagueId);
 }
 

@@ -5,6 +5,7 @@ import lombok.*;
 import java.util.Date;
 
 @Data
+
 public class ClubDto {
     public Long id;
     public String name;

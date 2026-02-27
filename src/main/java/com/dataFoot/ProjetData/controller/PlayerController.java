@@ -3,7 +3,7 @@ package com.dataFoot.ProjetData.controller;
 import com.dataFoot.ProjetData.dto.player.PlayerDto;
 import com.dataFoot.ProjetData.dto.player.PlayerFplDto;
 import com.dataFoot.ProjetData.dto.player.PlayerInClubDto;
-import com.dataFoot.ProjetData.model.Player;
+import com.dataFoot.ProjetData.service.PlayerImportService;
 import com.dataFoot.ProjetData.service.PlayerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,9 +16,11 @@ public class PlayerController {
 
 
     private final PlayerService playerService;
+    private final PlayerImportService playerImportService;
 
-    public PlayerController(PlayerService playerService) {
+    public PlayerController(PlayerService playerService, PlayerImportService playerImportService) {
         this.playerService = playerService;
+        this.playerImportService = playerImportService;
     }
 
     @GetMapping("/clubs/{id}")
@@ -30,10 +32,7 @@ public class PlayerController {
 
         return  playerService.getPlayerById(id);
     }
-    @PostMapping
-    public Player createPlayer(@RequestBody PlayerDto dto) {
-        return playerService.createPlayer(dto);
-    }
+
 
 
     @DeleteMapping("/{id}")
@@ -44,7 +43,7 @@ public class PlayerController {
 
     @PostMapping("/generate-players/{leagueId}")
     public ResponseEntity<List<PlayerFplDto>> generatePlayers(@PathVariable Long leagueId) {
-        return ResponseEntity.ok(playerService.generateOrUpdatePlayers(leagueId));
+        return ResponseEntity.ok(playerImportService.generateOrUpdatePlayers(leagueId));
     }
 
 

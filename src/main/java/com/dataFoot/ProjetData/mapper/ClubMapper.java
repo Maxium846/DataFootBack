@@ -18,7 +18,6 @@ public class ClubMapper {
         );
         dto.setEntraineur(club.getEntraineur());
         dto.setPresident(club.getPresident());
-        dto.setDateCreation(club.getDateCreation());
         return dto;
     }
 

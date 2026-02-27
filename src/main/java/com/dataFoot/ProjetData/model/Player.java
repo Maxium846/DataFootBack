@@ -1,5 +1,6 @@
 package com.dataFoot.ProjetData.model;
 
+import com.dataFoot.ProjetData.enumeration.Position;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -18,7 +19,7 @@ import java.util.Locale;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = "club")
+@ToString(exclude = {"club", "matchLineUps"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "players")
@@ -26,32 +27,31 @@ public class Player {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
     private String firstName;
     private String lastName;
-    private String position;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Position position;
     @ManyToOne
-    @JoinColumn(name = "club_id")
-    @JsonBackReference
+    @JoinColumn(name = "club_id",nullable = false)
     private Club club;
     @Column(nullable = true)
     private String nation;
     @Column(nullable = true)
     private LocalDate dateDeNaissance;
+    @OneToOne(mappedBy = "player", cascade = CascadeType.ALL,orphanRemoval=true)
 
-
-    @OneToOne(mappedBy = "player", cascade = CascadeType.ALL)
     private PlayerStats playerStats;
-
     @Transient
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    public int getAge(){
+    public Integer getAge(){
+        if(dateDeNaissance == null) return null;
 
         return Period.between(this.dateDeNaissance,LocalDate.now()).getYears();
     }
     @OneToMany(mappedBy = "player")
     private List<MatchLineUp> matchLineUps = new ArrayList<>();
-
-    private Integer idFpl;
-
+    @Column(unique = true)
+    private Integer apiFootballPlayerId;
 }

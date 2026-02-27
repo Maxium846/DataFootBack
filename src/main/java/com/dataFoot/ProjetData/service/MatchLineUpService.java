@@ -49,10 +49,10 @@ public class MatchLineUpService {
             lineup.setMatch(matchRepo.getReferenceById(matchId));
             lineup.setPlayer(playerRepo.getReferenceById(dto.getPlayerId()));
             lineup.setClub(clubRepo.getReferenceById(dto.getClubId()));
-            lineup.setPosition(dto.getPosition());
             lineup.setStarter(dto.getStarter() != null ? dto.getStarter() : true);
-            lineup.setLeague(league);
+            lineup.setPosition(dto.getPosition());
             MatchLineUp saved = lineupRepo.save(lineup);
+
             savedDtos.add(toDto(saved));
         }
 
@@ -65,12 +65,12 @@ public class MatchLineUpService {
         MatchLineUpDto dto = new MatchLineUpDto();
         dto.setId(lineup.getId());
         dto.setPlayerId(lineup.getPlayer().getId());
-        dto.setLeagueId(lineup.getLeague().getId());
         dto.setPlayerName(lineup.getPlayer().getFirstName() + " " + lineup.getPlayer().getLastName());
         dto.setClubId(lineup.getClub().getId());
         dto.setPosition(lineup.getPosition());
-        dto.setStarter(lineup.getStarter());
         dto.setMatchId(lineup.getMatch().getId());
+        dto.setStarter(lineup.isStarter());
+
         return dto;
     }
 }

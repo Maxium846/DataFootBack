@@ -14,10 +14,8 @@ public interface MatchLineUpRepository extends JpaRepository<MatchLineUp, Long> 
 
     List<MatchLineUp> findByMatchId(Long matchId);
 
-    List<MatchLineUp> findByMatchIdAndClubId(Long matchId, Long clubId);
-    @Transactional
-    @Modifying
-    @Query("DELETE FROM MatchLineUp m WHERE m.league.id = :leagueId")
-    void deleteByLeagueId(@Param("leagueId")Long leagueId);
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("delete from MatchLineUp ml where ml.match.id = :matchId")
+    void deleteAllByMatchId(@Param("matchId") Long matchId);
 }
 

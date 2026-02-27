@@ -42,10 +42,10 @@ public class ClubController {
         clubService.delete(id);
     }
 
-    @PostMapping("/generate-clubs/{leagueId}")
-    public ResponseEntity<List<ClubDtoFpl>> generateClubs(@PathVariable Long leagueId) {
+    @PostMapping("/generate-clubs/{leagueId}/{saison}")
+    public ResponseEntity<List<ClubDtoFpl>> generateClubs(@PathVariable Long leagueId, @PathVariable int saison) {
         try {
-            List<ClubDtoFpl> dtos = clubService.generateOrUpdateClubs(leagueId);
+            List<ClubDtoFpl> dtos = clubService.generateOrUpdateClubsApiFootball(leagueId,saison);
             return ResponseEntity.ok(dtos);
         } catch (RuntimeException e) {
             e.printStackTrace();

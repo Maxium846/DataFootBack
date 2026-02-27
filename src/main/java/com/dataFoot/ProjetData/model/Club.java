@@ -24,29 +24,23 @@ public class Club {
     @EqualsAndHashCode.Include
     private Long id;
 
+    @Column(nullable = false)
     private String name;
 
     // Relation avec joueurs
     @OneToMany(mappedBy = "club")
-    @JsonManagedReference
     private List<Player> player = new ArrayList<>();
 
     // Relation avec League
     @ManyToOne(optional = false)
     @JoinColumn(name = "league_id", nullable = false)
     private League league;
-
     private String president;
     private String entraineur;
-
-    private Integer DateCreation;
-
     // Relation avec Classement
     @OneToMany(mappedBy = "club")
     private List<Classement> classements = new ArrayList<>();
 
-
     @Column(unique = true)
-    private Integer fplId;
-
+    private Long apiFootballTeamId;
 }

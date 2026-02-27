@@ -1,5 +1,6 @@
 package com.dataFoot.ProjetData.dto.player;
 
+import com.dataFoot.ProjetData.enumeration.Position;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,18 +15,19 @@ public class PlayerFplDto {
 
     @JsonProperty("id")
     private Long id;
-
-    private Integer fplId;
+    @JsonProperty("team")
+    private Long teamId;
 
     @JsonProperty("first_name")
     private String firstName;
     @JsonProperty("second_name")
-    private String secondName;
+    private String lastName;
     @JsonProperty("element_type")
-    private String position ;
-    @JsonProperty("team")
-    private Long teamId;
+    private Position position ;
     @JsonProperty("birth_date")
     private LocalDate dateDeNaissance;
+    private  String nation;
+    private Integer ApiFootballPlayerId;
+
 
 }

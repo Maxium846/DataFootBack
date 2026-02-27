@@ -21,7 +21,7 @@ public class PlayerMapper {
         if (player.getDateDeNaissance() != null){
             dto.setDateDeNaissance(player.getDateDeNaissance());
         }
-        dto.setPosition(player.getPosition());
+        dto.setPosition(player.getPosition().name());
         dto.setFirstName(player.getFirstName());
         dto.setLastName(player.getLastName());
         dto.setAge(player.getDateDeNaissance() != null
@@ -39,10 +39,10 @@ public class PlayerMapper {
 
         Player player = new Player();
         player.setId(dto.getId());
-        player.setLastName(dto.lastName);
-        player.setFirstName(dto.firstName);
+        player.setLastName(dto.getLastName());
+        player.setFirstName(dto.getFirstName());
         player.setDateDeNaissance(dto.getDateDeNaissance());
-        player.setPosition(dto.position);
+        player.setPosition(dto.getPosition());
 
         return player;
     }

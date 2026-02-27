@@ -20,8 +20,11 @@ public interface ClubRepository extends JpaRepository<Club,Long> {
         @Query("SELECT c FROM Club c JOIN FETCH c.league WHERE c.league.id = :leagueId")
         List<Club> findAllByLeagueIdFetch(@Param("leagueId") Long leagueId);
 
-        Optional<Club> findByFplIdAndLeagueId(Integer fplId, Long leagueId);
-        Optional<Club> findByFplId(Integer fplId);
+        Optional<Club> findByApiFootballTeamId(Long apiFootballTeamId);
+
+        Optional<Club> findByLeagueIdAndApiFootballTeamId(Long leagueId, Long apiFootballTeamId);
+
+
 
 }
 

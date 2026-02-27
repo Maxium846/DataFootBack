@@ -11,7 +11,8 @@ public interface PlayersRepository extends JpaRepository<Player,Long> {
 
     List<Player> findByClubId(Long clubId);
 
-Optional<Player> findByIdFpl(Integer fplId);
-
     void deleteByClub_League_Id(Long leagueId);
+    Optional<Player> findByApiFootballPlayerId(Integer apiFootballPlayerId);
+
+
 }

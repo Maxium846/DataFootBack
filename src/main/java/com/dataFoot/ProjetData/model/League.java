@@ -1,5 +1,6 @@
 package com.dataFoot.ProjetData.model;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,18 +22,19 @@ public class League {
     @EqualsAndHashCode.Include
     private Long id;
 
+@Column(nullable = false)
     private String name;
     private String country;
 
     // Relation avec clubs: une league contient plusieurs  ligne club et chaque club appartient  a une ligue
-    @OneToMany(mappedBy = "league", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "league")
     private List<Club> clubs = new ArrayList<>();
 
     @OneToMany(mappedBy = "league")
     private List<Classement> classements = new ArrayList<>();
 
-    @OneToMany(mappedBy = "league")
-    private List<MatchLineUp> matchLineUps = new ArrayList<>();
+    private Integer apiFootballLeague;
+
 
 
 
