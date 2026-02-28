@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MatchLineUpRepository extends JpaRepository<MatchLineUp, Long> {
 
@@ -17,5 +18,10 @@ public interface MatchLineUpRepository extends JpaRepository<MatchLineUp, Long> 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("delete from MatchLineUp ml where ml.match.id = :matchId")
     void deleteAllByMatchId(@Param("matchId") Long matchId);
+
+    Optional<MatchLineUp> findByMatchIdAndPlayerId(Long matchId, Long playerId);
+
+    void deleteByMatchIdAndPlayerIdNotIn(Long matchId, java.util.Collection<Long> playerIds);
+
 }
 

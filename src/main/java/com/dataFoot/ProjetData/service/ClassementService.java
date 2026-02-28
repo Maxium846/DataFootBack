@@ -115,7 +115,7 @@ public class ClassementService {
                 home.setPoints(home.getPoints() + 3);
                 away.setLosses(away.getLosses() + 1);
             } else if (m.getHomeGoals() < m.getAwayGoals()) {
-                away.setWins(away.getWins() + 3);
+                away.setWins(away.getWins() + 1);
                 away.setPoints(away.getPoints() + 3);
                 home.setLosses(home.getLosses() + 1);
             } else {

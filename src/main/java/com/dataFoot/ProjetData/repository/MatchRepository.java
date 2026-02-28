@@ -10,14 +10,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MatchRepository extends JpaRepository<Match,Long> {
-    List<Match> findByLeagueIdOrderByMatchDateAsc(Long leagueId);
 
-    List<Match> findMatchByLeagueIdAndPlayedTrue(Long leagueId);
     List<Match> findByLeagueAndPlayedTrue(League leagueId);
     List<Match> findMatchesByLeagueIdOrderByJourneeAsc(Long leagueId);
-    boolean existsByLeagueId(Long leagueId);
 
     @Transactional
     @Modifying
@@ -33,5 +31,7 @@ public interface MatchRepository extends JpaRepository<Match,Long> {
 
 
     List<Match> findByLeagueId(Long leagueId);
+
+    Optional<Match> findByApiFootballFixtureId(Integer fixtureId);
 }
 

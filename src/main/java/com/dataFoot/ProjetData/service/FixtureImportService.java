@@ -28,7 +28,6 @@ public class FixtureImportService {
     private final ClubRepository clubRepository;
     private final MatchRepository matchRepository;
     private final ClassementRepository classementRepository;
-    private final MatchLineUpRepository matchLineUpRepository;
     private final ClassementService classementService;
     private final ObjectMapper objectMapper;
 
@@ -43,14 +42,12 @@ public class FixtureImportService {
                                 ClubRepository clubRepository,
                                 MatchRepository matchRepository,
                                 ClassementRepository classementRepository,
-                                MatchLineUpRepository matchLineUpRepository,
                                 ClassementService classementService,
                                 ObjectMapper objectMapper) {
         this.leagueRepository = leagueRepository;
         this.clubRepository = clubRepository;
         this.matchRepository = matchRepository;
         this.classementRepository = classementRepository;
-        this.matchLineUpRepository = matchLineUpRepository;
         this.classementService = classementService;
         this.objectMapper = objectMapper;
     }
@@ -67,14 +64,10 @@ public class FixtureImportService {
         }
 
         // Nettoyage
-        matchLineUpRepository.deleteAllByMatchId(leagueId);
-        matchRepository.deleteByLeagueId(leagueId);
-        classementRepository.deleteByLeagueId(leagueId);
 
         // Clubs + init classement
         List<Club> clubs = clubRepository.findByLeagueId(leagueId);
         if (clubs.size() < 2) throw new RuntimeException("Pas assez de clubs");
-        initClassement(league, clubs);
 
         int season = 2025; // 2025/2026
         List<JsonNode> fixtures = fetchFixtures(apiFootballLeagueId, season);
@@ -131,7 +124,8 @@ public class FixtureImportService {
             String statusShort = fixture.path("status").path("short").asText("");
             boolean played = isPlayed(statusShort) && homeGoals != null && awayGoals != null;
 
-            Match match = new Match();
+            Match match = matchRepository.findByApiFootballFixtureId(fixtureId)
+                    .orElseGet(Match::new);
             match.setLeague(league);
             match.setHomeClub(home);
             match.setAwayClub(away);

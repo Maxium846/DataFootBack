@@ -1,13 +1,12 @@
-package com.dataFoot.ProjetData.dto.fpl;
+package com.dataFoot.ProjetData.dto.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 
 @Data
-public class MatchDtoFpl {
+public class MatchDtoApi {
 
 
     @JsonProperty("id")
@@ -30,9 +29,5 @@ public class MatchDtoFpl {
     private Integer teamAwayScore;
     @JsonProperty("team_h_score")
     private Integer teamHomeScore;
-
-    @JsonProperty("stats")
-    private List<StatFplDto> stats;
-
 
 }

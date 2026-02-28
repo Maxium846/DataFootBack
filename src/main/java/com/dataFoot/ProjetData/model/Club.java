@@ -41,6 +41,8 @@ public class Club {
     @OneToMany(mappedBy = "club")
     private List<Classement> classements = new ArrayList<>();
 
+    private Integer dateFondation;
+
     @Column(unique = true)
     private Long apiFootballTeamId;
 }

@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public interface MatchEventRepository extends JpaRepository<MatchEvent,Long> {
 
@@ -32,5 +33,8 @@ public interface MatchEventRepository extends JpaRepository<MatchEvent,Long> {
     void deleteAllByMatchId(@Param("matchId") Long matchId);
 
     int countByPlayerIdAndEventTypeIn(int playerId, Collection<EventType> types);
+
+    Optional<MatchEvent> findByMatchIdAndPlayerId(Long matchId, Long playerId);
+    boolean existsByMatchId(Long matchId);
 
 }

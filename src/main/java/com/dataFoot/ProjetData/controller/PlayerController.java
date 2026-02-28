@@ -1,7 +1,6 @@
 package com.dataFoot.ProjetData.controller;
 
-import com.dataFoot.ProjetData.dto.player.PlayerDto;
-import com.dataFoot.ProjetData.dto.player.PlayerFplDto;
+import com.dataFoot.ProjetData.dto.player.PlayerApiDto;
 import com.dataFoot.ProjetData.dto.player.PlayerInClubDto;
 import com.dataFoot.ProjetData.service.PlayerImportService;
 import com.dataFoot.ProjetData.service.PlayerService;
@@ -33,16 +32,8 @@ public class PlayerController {
         return  playerService.getPlayerById(id);
     }
 
-
-
-    @DeleteMapping("/{id}")
-    public void deletePlayers (@PathVariable  Long id){
-
-         playerService.deletePlayer(id);
-    }
-
     @PostMapping("/generate-players/{leagueId}")
-    public ResponseEntity<List<PlayerFplDto>> generatePlayers(@PathVariable Long leagueId) {
+    public ResponseEntity<List<PlayerApiDto>> generatePlayers(@PathVariable Long leagueId) {
         return ResponseEntity.ok(playerImportService.generateOrUpdatePlayers(leagueId));
     }
 

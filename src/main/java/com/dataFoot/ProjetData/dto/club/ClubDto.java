@@ -12,5 +12,5 @@ public class ClubDto {
     public Long leagueId;
     public String president;
     public String entraineur;
-    public Integer dateCreation;
+    private Integer dateFondation;
 }

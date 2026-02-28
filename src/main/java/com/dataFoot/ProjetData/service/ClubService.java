@@ -1,7 +1,7 @@
 package com.dataFoot.ProjetData.service;
 
 import com.dataFoot.ProjetData.dto.club.ClubDto;
-import com.dataFoot.ProjetData.dto.fpl.ClubDtoFpl;
+import com.dataFoot.ProjetData.dto.api.ClubDtoApi;
 import com.dataFoot.ProjetData.mapper.ClubMapper;
 import com.dataFoot.ProjetData.model.Club;
 import com.dataFoot.ProjetData.model.League;
@@ -25,6 +25,8 @@ import java.util.stream.Collectors;
 @Service
 public class ClubService {
 
+    private static final String  BASE_URL = "https://v3.football.api-sports.io";
+
     private final ClubRepository clubRepository;
     private final LeagueRepository leagueRepository;
     private final ObjectMapper objectMapper;
@@ -39,25 +41,6 @@ public class ClubService {
         this.leagueRepository = leagueRepository;
         this.objectMapper = objectMapper;
     }
-
-    public ClubDto createClub(ClubDto dto) {
-
-        League league = leagueRepository.findById(dto.getLeagueId())
-                .orElseThrow(() -> new RuntimeException("League not found"));
-
-
-        //« À partir des données du DTO et de la ligue trouvée en base,
-        //crée-moi un objet Club prêt à être sauvegardé.
-        Club club = ClubMapper.toEntity(dto, league);
-
-        Club saved = clubRepository.save(club);
-
-        leagueRepository.findById(dto.getLeagueId()).orElseThrow(() -> new RuntimeException("League not found"));
-
-
-        return ClubMapper.toDto(saved);
-    }
-
 
     public List<ClubDto> findAll() {
         return clubRepository.findAll()
@@ -81,24 +64,18 @@ public class ClubService {
 
         return ClubMapper.toDto(updated);
     }
-    public void delete(Long id) {
-        if (!clubRepository.existsById(id)) {
-            throw new RuntimeException("Club not found");
-        }
-        clubRepository.deleteById(id);
-    }
 
-
-    public List<ClubDtoFpl> generateOrUpdateClubsApiFootball(Long leagueId, int season) {
-        List<ClubDtoFpl> result = new ArrayList<>();
+    public List<ClubDtoApi> generateOrUpdateClubsApiFootball(Long leagueId, int season) {
+        List<ClubDtoApi> result = new ArrayList<>();
 
         League league = leagueRepository.findById(leagueId)
                 .orElseThrow(() -> new RuntimeException("League not found"));
+        Integer apiFootballLeagueId = league.getApiFootballLeague();
 
         try {
             // 1) Appel API-FOOTBALL (avec header x-apisports-key)
             String json = fetchApiSports(
-                    "https://v3.football.api-sports.io/teams?league=39&season=" + season
+                    BASE_URL + "/teams?league=" + apiFootballLeagueId + "&season=" + season
             );
 
             // 2) Parser JSON
@@ -115,6 +92,7 @@ public class ClubService {
 
                 long apiTeamId = teamNode.get("id").asLong();
                 String name = teamNode.get("name").asText();
+                int fondation = teamNode.get("founded").asInt();
                 // Upsert club
                 Club club = clubRepository.findByApiFootballTeamId(apiTeamId)
                         .orElseGet(Club::new);
@@ -122,13 +100,15 @@ public class ClubService {
                 club.setApiFootballTeamId(apiTeamId);
                 club.setName(name);
                 club.setLeague(league);
+                club.setDateFondation(fondation);
 
                 Club saved = clubRepository.save(club);
 
-                result.add(new ClubDtoFpl(
+                result.add(new ClubDtoApi(
                         saved.getId(),
                         saved.getName(),
-                        saved.getLeague() != null ? saved.getLeague().getId() : null
+                        saved.getLeague() != null ? saved.getLeague().getId() : null,
+                        saved.getDateFondation()
                 ));
             }
 

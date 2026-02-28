@@ -1,6 +1,6 @@
 package com.dataFoot.ProjetData.service;
 
-import com.dataFoot.ProjetData.dto.player.PlayerFplDto;
+import com.dataFoot.ProjetData.dto.player.PlayerApiDto;
 import com.dataFoot.ProjetData.enumeration.Position;
 import com.dataFoot.ProjetData.model.Club;
 import com.dataFoot.ProjetData.model.League;
@@ -48,7 +48,7 @@ public class PlayerImportService {
     }
 
     @Transactional
-    public List<PlayerFplDto> generateOrUpdatePlayers(Long leagueId) {
+    public List<PlayerApiDto> generateOrUpdatePlayers(Long leagueId) {
 
         League league = leagueRepository.findById(leagueId)
                 .orElseThrow(() -> new RuntimeException("League not found"));
@@ -58,8 +58,8 @@ public class PlayerImportService {
             throw new RuntimeException("League missing apiFootballLeagueId (ex: Premier League = 39)");
         }
 
-        int season = 2025; // 2025/2026 = année de début
-        List<PlayerFplDto> result = new ArrayList<>();
+        int season = 2025;
+        List<PlayerApiDto> result = new ArrayList<>();
 
         try {
             int page = 1;
@@ -99,8 +99,7 @@ public class PlayerImportService {
                     }
 
                     // --- Choix d'une "stat principale" ---
-                    // Souvent statistics[0] suffit. Si tu veux être plus robuste, tu peux chercher celle
-                    // dont league.id == apiFootballLeagueId, puis team.id non null.
+
                     JsonNode mainStat = (statistics.isArray() && statistics.size() > 0)
                             ? statistics.get(0)
                             : null;
@@ -139,7 +138,7 @@ public class PlayerImportService {
 
                     Player saved = playerRepository.save(player);
 
-                    result.add(new PlayerFplDto(
+                    result.add(new PlayerApiDto(
                             saved.getId(),
                             saved.getClub() != null ? saved.getClub().getId() : null,
                             saved.getFirstName(),

@@ -48,7 +48,7 @@ public class Match {
     private List<MatchLineUp> lineups = new ArrayList<>();
 
     @Column(unique = true)
-    private int ApiFootballFixtureId;
+    private int apiFootballFixtureId;
 
 
 }
