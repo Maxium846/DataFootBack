@@ -50,5 +50,4 @@ public class Match {
     @Column(unique = true)
     private int apiFootballFixtureId;
 
-
 }

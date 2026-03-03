@@ -12,4 +12,5 @@ public class ClubDtoApi {
     private String name;
     private Long leagueId;
     private int dateFondation;
+    private String entraineur;
 }

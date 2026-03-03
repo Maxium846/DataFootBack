@@ -11,4 +11,10 @@ public class MatchEventDto {
     private int  minutes;
     private String eventType;
     private Long clubId;
+    private Long assistPlayerId;
+    private String assistName;
+    private Long playerOutId;
+    private Long playerInId;
+    private String namePlayerin;
+    private String namePlayerOut;
 }

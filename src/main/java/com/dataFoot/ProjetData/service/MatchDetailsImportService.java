@@ -17,6 +17,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class MatchDetailsImportService {
@@ -50,19 +51,26 @@ public class MatchDetailsImportService {
     }
 
     /**
-     * Stratégie:
-     * - Events:
-     *   - si match FINI: import 1 fois, puis on skip (si existe déjà)
-     *   - si match du jour (LIVE possible): on peut resync (delete+insert)
-     * - Lineups:
-     *   - upsert par (matchId, playerId)
-     *   - puis delete des joueurs absents de la réponse
+     * - forceResync=true : migration (delete + reimport)
+     * - forceResync=false: comportement normal (skip finished déjà importé)
      */
     @Transactional
     public String importEventsAndLineupsForLeague(Long leagueId) {
 
-        List<Match> matches = matchRepository.findByLeagueId(leagueId);
+        // ---- Réglages (mets forceResync=true UNE FOIS pour migration) ----
+        boolean forceResync = false;      // ✅ passe à false après ton run migration
+        int windowDaysBack = 30;         // ✅ évite d'importer toute la saison (mets grand si tu veux tout)
+        // -----------------------------------------------------------------
+
         LocalDate today = LocalDate.now();
+        LocalDate from = today.minusDays(windowDaysBack);
+
+        List<Match> matches = matchRepository.findByLeagueId(leagueId);
+
+        // Cache clubs (1 seule requête)
+        Map<Long, Club> clubByApiTeamId = clubRepository.findByLeagueId(leagueId).stream()
+                .filter(c -> c.getApiFootballTeamId() != null)
+                .collect(Collectors.toMap(Club::getApiFootballTeamId, c -> c));
 
         int eventsImported = 0;
         int eventsSkippedAlreadyDone = 0;
@@ -78,36 +86,34 @@ public class MatchDetailsImportService {
                 continue;
             }
 
-            boolean isFinished = match.isPlayed(); // chez toi: played = match terminé
+            boolean isFinished = match.isPlayed();
             boolean isToday = match.getMatchDate() != null && match.getMatchDate().isEqual(today);
 
-            // Règles de fetch
-            boolean fetchEvents = isFinished || isToday;   // events: fini ou match du jour
-            boolean fetchLineups = isFinished || isToday;  // lineups: fini ou match du jour
+            boolean fetchEvents = isFinished || isToday;
+            boolean fetchLineups = isFinished || isToday;
 
-            // si match futur (pas aujourd'hui et pas fini), on skip
             if (!fetchEvents && !fetchLineups) {
                 matchesSkippedFuture++;
                 continue;
             }
 
-            // 1) EVENTS
+            // ---------- EVENTS ----------
             if (fetchEvents) {
                 boolean alreadyImported = matchEventRepository.existsByMatchId(match.getId());
 
-                if (isFinished && alreadyImported) {
-                    // Match fini et events déjà importés -> on ne touche plus
+                boolean mustResync = forceResync || isToday || !alreadyImported;
+
+                if (isFinished && alreadyImported && !mustResync) {
                     eventsSkippedAlreadyDone++;
                 } else {
-                    // Match du jour (LIVE) ou match fini jamais importé -> resync events
                     matchEventRepository.deleteAllByMatchId(match.getId());
-                    eventsImported += importEventsForMatch(match, fixtureId, leagueId);
+                    eventsImported += importEventsForMatchOptimized(match, fixtureId, clubByApiTeamId);
                 }
             }
 
-            // 2) LINEUPS
+            // ---------- LINEUPS ----------
             if (fetchLineups) {
-                lineupsUpserted += importLineupsForMatchUpsert(match, fixtureId, leagueId);
+                lineupsUpserted += importLineupsForMatchUpsertOptimized(match, fixtureId, leagueId, clubByApiTeamId);
             }
         }
 
@@ -116,28 +122,44 @@ public class MatchDetailsImportService {
                 + " eventsSkippedFinishedAlreadyDone=" + eventsSkippedAlreadyDone
                 + " lineupsUpserted=" + lineupsUpserted
                 + " skippedNoFixture=" + matchesSkippedNoFixture
-                + " skippedFuture=" + matchesSkippedFuture;
+                + " skippedFuture=" + matchesSkippedFuture
+                + " from=" + from + " to=" + today
+                + " forceResync=" + forceResync;
     }
 
-    // -------------------- EVENTS --------------------
+    // -------------------- EVENTS (OPTIMIZED) --------------------
 
-    private int importEventsForMatch(Match match, int fixtureId, Long leagueId) {
+    private int importEventsForMatchOptimized(Match match,
+                                              int fixtureId,
+                                              Map<Long, Club> clubByApiTeamId) {
         try {
             String url = BASE_URL + "/fixtures/events?fixture=" + fixtureId;
             JsonNode response = callApiWithRetry(url).path("response");
             if (!response.isArray()) return 0;
 
-            int saved = 0;
+            // 1) collect all apiPlayerIds
+            Set<Integer> apiPlayerIds = new HashSet<>();
+            for (JsonNode e : response) {
+                Integer p = e.path("player").path("id").isMissingNode() ? null : e.path("player").path("id").asInt();
+                Integer a = e.path("assist").path("id").isMissingNode() ? null : e.path("assist").path("id").asInt();
+                if (p != null) apiPlayerIds.add(p);
+                if (a != null) apiPlayerIds.add(a);
+            }
+
+            // 2) load players in 1 query
+            Map<Integer, Player> playerByApiId = playerRepository.findByApiFootballPlayerIdIn(apiPlayerIds).stream()
+                    .collect(Collectors.toMap(Player::getApiFootballPlayerId, p -> p));
+
+            List<MatchEvent> toSave = new ArrayList<>();
 
             for (JsonNode e : response) {
 
                 Long apiTeamId = e.path("team").path("id").isMissingNode() ? null : e.path("team").path("id").asLong();
                 if (apiTeamId == null) continue;
 
-                Club club = clubRepository.findByLeagueIdAndApiFootballTeamId(leagueId, apiTeamId).orElse(null);
+                Club club = clubByApiTeamId.get(apiTeamId);
                 if (club == null) continue;
 
-                // Minute + extra
                 int minute = e.path("time").path("elapsed").asInt(0);
                 Integer extra = e.path("time").path("extra").isNull() ? null : e.path("time").path("extra").asInt();
                 if (extra != null) minute += extra;
@@ -149,139 +171,173 @@ public class MatchDetailsImportService {
                 if (eventType == null) eventType = EventType.OTHER;
 
                 Integer apiPlayerId = e.path("player").path("id").isMissingNode() ? null : e.path("player").path("id").asInt();
-                Player player = null;
-                if (apiPlayerId != null) {
-                    player = playerRepository.findByApiFootballPlayerId(apiPlayerId).orElse(null);
-                }
-                // si pas de player en base -> on skip (sinon tu auras des events “orphelins”)
-                if (player == null) continue;
+                Integer apiAssistId = e.path("assist").path("id").isMissingNode() ? null : e.path("assist").path("id").asInt();
 
-                // Assist uniquement pour buts
-                Player assistPlayer = null;
-                String assistName = null;
+                Player mainPlayer = (apiPlayerId == null) ? null : playerByApiId.get(apiPlayerId);
+                Player assistPlayer = (apiAssistId == null) ? null : playerByApiId.get(apiAssistId);
 
-                boolean isGoalEvent = eventType == EventType.GOAL
-                        || eventType == EventType.PENALTY_GOAL;
+                String playerName = e.path("player").path("name").isMissingNode() ? null : e.path("player").path("name").asText(null);
+                String assistName = e.path("assist").path("name").isMissingNode() ? null : e.path("assist").path("name").asText(null);
 
-                if (isGoalEvent) {
-                    Integer apiAssistId = e.path("assist").path("id").isMissingNode()
-                            ? null
-                            : e.path("assist").path("id").asInt();
-
-                    assistName = e.path("assist").path("name").isMissingNode()
-                            ? null
-                            : e.path("assist").path("name").asText(null);
-
-                    if (apiAssistId != null) {
-                        assistPlayer = playerRepository.findByApiFootballPlayerId(apiAssistId).orElse(null);
-                    }
-                }
-
-                // IMPORTANT: pas d'UPSERT naïf par playerId -> un joueur peut avoir plusieurs events.
                 MatchEvent me = new MatchEvent();
                 me.setMatch(match);
                 me.setClub(club);
                 me.setMinute(minute);
                 me.setEventType(eventType);
-                me.setPlayer(player);
-                me.setAssistPlayer(assistPlayer);
-                me.setAssistName(assistName);
 
-                matchEventRepository.save(me);
-                saved++;
+                if (eventType == EventType.SUBSTITUTION) {
+                    // substitution: player = out, assist = in
+                    me.setPlayerOut(mainPlayer);
+                    me.setPlayerIn(assistPlayer);
+
+                    // fallback noms (si ids null/non trouvés)
+                    me.setPlayerOutName(playerName);
+                    me.setPlayerInName(assistName);
+
+                    me.setPlayer(null);
+                    me.setAssistPlayer(null);
+                    me.setAssistName(null);
+
+                } else {
+                    // autres events => joueur principal requis
+                    if (mainPlayer == null) continue;
+
+                    me.setPlayer(mainPlayer);
+
+                    boolean isGoal = (eventType == EventType.GOAL || eventType == EventType.PENALTY_GOAL);
+                    if (isGoal) {
+                        me.setAssistPlayer(assistPlayer);
+                        me.setAssistName(assistName);
+                    }
+
+                    me.setPlayerOut(null);
+                    me.setPlayerIn(null);
+                    me.setPlayerOutName(null);
+                    me.setPlayerInName(null);
+                }
+
+                toSave.add(me);
             }
 
-            return saved;
+            matchEventRepository.saveAll(toSave);
+            return toSave.size();
 
         } catch (Exception ex) {
-            System.out.println("❌ importEventsForMatch failed: matchId=" + match.getId()
-                    + " fixtureId=" + fixtureId + " leagueId=" + leagueId
-                    + " msg=" + ex.getMessage());
+            System.out.println("❌ importEventsForMatch failed matchId=" + match.getId()
+                    + " fixtureId=" + fixtureId + " msg=" + ex.getMessage());
             ex.printStackTrace();
             return 0;
         }
     }
 
-    // -------------------- LINEUPS (UPSERT + DELETE ABSENTS) --------------------
+    // -------------------- LINEUPS (OPTIMIZED) --------------------
 
-    private int importLineupsForMatchUpsert(Match match, int fixtureId, Long leagueId) {
+    private int importLineupsForMatchUpsertOptimized(Match match,
+                                                     int fixtureId,
+                                                     Long leagueId,
+                                                     Map<Long, Club> clubByApiTeamId) {
         try {
             String url = BASE_URL + "/fixtures/lineups?fixture=" + fixtureId;
             JsonNode response = callApiWithRetry(url).path("response");
             if (!response.isArray()) return 0;
 
-            int upserted = 0;
+            // preload existing lineups in 1 query (évite N requêtes)
+            Map<Long, MatchLineUp> existingByPlayerId = matchLineUpRepository.findByMatchId(match.getId()).stream()
+                    .collect(Collectors.toMap(lu -> lu.getPlayer().getId(), lu -> lu));
+
+            // collect api ids
+            Set<Integer> apiPlayerIds = new HashSet<>();
+            for (JsonNode teamLineup : response) {
+                JsonNode startXI = teamLineup.path("startXI");
+                if (startXI.isArray()) {
+                    for (JsonNode p : startXI) {
+                        Integer id = p.path("player").path("id").isMissingNode() ? null : p.path("player").path("id").asInt();
+                        if (id != null) apiPlayerIds.add(id);
+                    }
+                }
+                JsonNode subs = teamLineup.path("substitutes");
+                if (subs.isArray()) {
+                    for (JsonNode p : subs) {
+                        Integer id = p.path("player").path("id").isMissingNode() ? null : p.path("player").path("id").asInt();
+                        if (id != null) apiPlayerIds.add(id);
+                    }
+                }
+            }
+
+            Map<Integer, Player> playerByApiId = playerRepository.findByApiFootballPlayerIdIn(apiPlayerIds).stream()
+                    .collect(Collectors.toMap(Player::getApiFootballPlayerId, p -> p));
+
             Set<Long> seenPlayerIds = new HashSet<>();
+            List<MatchLineUp> toSave = new ArrayList<>();
 
             for (JsonNode teamLineup : response) {
 
-                Long apiTeamId = teamLineup.path("team").path("id").isMissingNode()
-                        ? null
-                        : teamLineup.path("team").path("id").asLong();
+                Long apiTeamId = teamLineup.path("team").path("id").isMissingNode() ? null : teamLineup.path("team").path("id").asLong();
                 if (apiTeamId == null) continue;
 
-                Club club = clubRepository.findByLeagueIdAndApiFootballTeamId(leagueId, apiTeamId).orElse(null);
+                Club club = clubByApiTeamId.get(apiTeamId);
                 if (club == null) continue;
 
                 JsonNode startXI = teamLineup.path("startXI");
                 if (startXI.isArray()) {
                     for (JsonNode p : startXI) {
-                        upserted += upsertLineupPlayer(match, club, p.path("player"), true, seenPlayerIds);
+                        upsertLineupFast(match, club, p.path("player"), true, playerByApiId, existingByPlayerId, seenPlayerIds, toSave);
                     }
                 }
 
                 JsonNode subs = teamLineup.path("substitutes");
                 if (subs.isArray()) {
                     for (JsonNode p : subs) {
-                        upserted += upsertLineupPlayer(match, club, p.path("player"), false, seenPlayerIds);
+                        upsertLineupFast(match, club, p.path("player"), false, playerByApiId, existingByPlayerId, seenPlayerIds, toSave);
                     }
                 }
             }
 
-            // Nettoyage: supprimer les joueurs qui ne sont plus dans la réponse
-            // (Si la feuille n'est pas dispo, seenPlayerIds sera vide -> on ne delete rien)
+            // save batch
+            matchLineUpRepository.saveAll(toSave);
+
+            // delete absent players
             if (!seenPlayerIds.isEmpty()) {
                 matchLineUpRepository.deleteByMatchIdAndPlayerIdNotIn(match.getId(), seenPlayerIds);
             }
 
-            return upserted;
+            return toSave.size();
 
         } catch (Exception ex) {
             return 0;
         }
     }
 
-    private int upsertLineupPlayer(Match match,
-                                   Club club,
-                                   JsonNode playerNode,
-                                   boolean starter,
-                                   Set<Long> seenPlayerIds) {
+    private void upsertLineupFast(Match match,
+                                  Club club,
+                                  JsonNode playerNode,
+                                  boolean starter,
+                                  Map<Integer, Player> playerByApiId,
+                                  Map<Long, MatchLineUp> existingByPlayerId,
+                                  Set<Long> seenPlayerIds,
+                                  List<MatchLineUp> toSave) {
 
         Integer apiPlayerId = playerNode.path("id").isMissingNode() ? null : playerNode.path("id").asInt();
-        if (apiPlayerId == null) return 0;
+        if (apiPlayerId == null) return;
 
-        Player player = playerRepository.findByApiFootballPlayerId(apiPlayerId).orElse(null);
-        if (player == null) return 0;
+        Player player = playerByApiId.get(apiPlayerId);
+        if (player == null) return;
 
         String pos = playerNode.path("pos").asText(null);
         Position position = mapPositionFromLineupPos(pos);
         if (position == null) position = player.getPosition();
-        if (position == null) return 0;
+        if (position == null) return;
 
         seenPlayerIds.add(player.getId());
 
-        MatchLineUp lu = matchLineUpRepository
-                .findByMatchIdAndPlayerId(match.getId(), player.getId())
-                .orElseGet(MatchLineUp::new);
-
+        MatchLineUp lu = existingByPlayerId.getOrDefault(player.getId(), new MatchLineUp());
         lu.setMatch(match);
         lu.setClub(club);
         lu.setPlayer(player);
         lu.setStarter(starter);
         lu.setPosition(position);
 
-        matchLineUpRepository.save(lu);
-        return 1;
+        toSave.add(lu);
     }
 
     // -------------------- API CALL --------------------
@@ -289,7 +345,7 @@ public class MatchDetailsImportService {
     private JsonNode callApiWithRetry(String url) throws Exception {
 
         int maxRetries = 8;
-        long baseWaitMs = 600;
+        long baseWaitMs = 150;   // ✅ réduit (600ms c’est énorme)
         long backoffMs = 1200;
 
         for (int attempt = 1; attempt <= maxRetries; attempt++) {
@@ -314,7 +370,6 @@ public class MatchDetailsImportService {
             }
 
             Thread.sleep(baseWaitMs);
-
             return objectMapper.readTree(resp.body());
         }
 

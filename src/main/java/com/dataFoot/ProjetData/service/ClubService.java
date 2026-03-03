@@ -73,10 +73,11 @@ public class ClubService {
         Integer apiFootballLeagueId = league.getApiFootballLeague();
 
         try {
-            // 1) Appel API-FOOTBALL (avec header x-apisports-key)
+            // 1) Appel API-FOOTBALL
             String json = fetchApiSports(
                     BASE_URL + "/teams?league=" + apiFootballLeagueId + "&season=" + season
             );
+
 
             // 2) Parser JSON
             JsonNode root = objectMapper.readTree(json);
@@ -87,12 +88,30 @@ public class ClubService {
             }
 
             for (JsonNode item : response) {
+
                 JsonNode teamNode = item.get("team");
                 if (teamNode == null) continue;
-
                 long apiTeamId = teamNode.get("id").asLong();
                 String name = teamNode.get("name").asText();
                 int fondation = teamNode.get("founded").asInt();
+
+                String coachName = null;
+
+                try {
+                    String jsonCoach = fetchApiSports(BASE_URL + "/coachs?team=" + apiTeamId);
+                    JsonNode rootCoach = objectMapper.readTree(jsonCoach);
+                    JsonNode responseCoach = rootCoach.get("response");
+
+                    if (responseCoach != null && responseCoach.isArray() && responseCoach.size() > 0) {
+                        JsonNode coachNode = responseCoach.get(responseCoach.size()-1);
+                        if (coachNode != null && coachNode.hasNonNull("name")) {
+                            coachName = coachNode.get("name").asText();
+                        }
+                    }
+                } catch (Exception ex) {
+                    // on ne bloque pas l'import club si coach indispo
+                    coachName = null;
+                }
                 // Upsert club
                 Club club = clubRepository.findByApiFootballTeamId(apiTeamId)
                         .orElseGet(Club::new);
@@ -101,6 +120,7 @@ public class ClubService {
                 club.setName(name);
                 club.setLeague(league);
                 club.setDateFondation(fondation);
+                club.setEntraineur(coachName);
 
                 Club saved = clubRepository.save(club);
 
@@ -108,7 +128,8 @@ public class ClubService {
                         saved.getId(),
                         saved.getName(),
                         saved.getLeague() != null ? saved.getLeague().getId() : null,
-                        saved.getDateFondation()
+                        saved.getDateFondation(),
+                        saved.getEntraineur()
                 ));
             }
 

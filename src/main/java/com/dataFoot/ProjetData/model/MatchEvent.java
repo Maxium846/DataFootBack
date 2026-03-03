@@ -13,7 +13,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"match", "player", "club"})
+@ToString(exclude = {"match", "player", "assistPlayer", "club", "playerOut", "playerIn"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class MatchEvent {
 
@@ -46,6 +46,16 @@ public class MatchEvent {
     @Enumerated(EnumType.STRING)
     @Column(name="event_type", nullable = false, length = 30)
     private EventType eventType;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "player_out_id")
+    private Player playerOut;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "player_in_id")
+    private Player playerIn;
+    @Column(name = "player_out_name")
+    private String playerOutName;
+    @Column(name = "player_in_name")
+    private String  playerInName;
 
 
 }
