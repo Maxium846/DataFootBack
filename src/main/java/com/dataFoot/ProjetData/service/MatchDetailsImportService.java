@@ -137,7 +137,7 @@ public class MatchDetailsImportService {
             JsonNode response = callApiWithRetry(url).path("response");
             if (!response.isArray()) return 0;
 
-            // 1) collect all apiPlayerIds
+            // 1) Récupére tout les id des joueurs mentionnés dans l'event.
             Set<Integer> apiPlayerIds = new HashSet<>();
             for (JsonNode e : response) {
                 Integer p = e.path("player").path("id").isMissingNode() ? null : e.path("player").path("id").asInt();
@@ -146,7 +146,7 @@ public class MatchDetailsImportService {
                 if (a != null) apiPlayerIds.add(a);
             }
 
-            // 2) load players in 1 query
+            // 2) Charger tout les joueurs en une seul requete et creer une Map
             Map<Integer, Player> playerByApiId = playerRepository.findByApiFootballPlayerIdIn(apiPlayerIds).stream()
                     .collect(Collectors.toMap(Player::getApiFootballPlayerId, p -> p));
 

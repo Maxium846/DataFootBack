@@ -1,7 +1,6 @@
 package com.dataFoot.ProjetData.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,29 +11,37 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Table(name = "match-team-stats", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_match_team", columnNames = {"match_id", "team_id"})
+})
+
 public class MatchStat {
+ @Id
+ @GeneratedValue(strategy = GenerationType.IDENTITY)
    private Long id;
-    private int shootsOnGoals;
-    private int shootOffGoals;
-    private int totalShots;
-    private int blockedShots;
-    private int shotInsideBox;
-    private int shotsOutsideBox;
-    private int fouls;
-    private int cornerKick;
-    private int offsides;
-    private int ballPossession;
-    private int yellowCards;
-    private int redCards;
-    private int goalkeeperSave;
-    private int totalPasses;
-    private int passesAccurate;
-    private int passesPourcentage;
-    private int expectedGoals;
-    private int goalsPrevented;
-    @ManyToOne
-    private Match matchIdapi;
-    @ManyToOne
+    private Integer shootsOnGoals;
+    private Integer shootOffGoals;
+    private Integer totalShots;
+    private Integer blockedShots;
+    private Integer shotInsideBox;
+    private Integer shotsOutsideBox;
+    private Integer fouls;
+    private Integer cornerKick;
+    private Integer offsides;
+    private Integer ballPossession;
+    private Integer yellowCards;
+    private Integer redCards;
+    private Integer goalkeeperSave;
+    private Integer totalPasses;
+    private Integer passesAccurate;
+    private Integer passesPercentage;
+    private Integer expectedGoals;
+    private Integer goalsPrevented;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "match_id")
+    private Match match;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "club_id")
     private Club clubId;
 
 

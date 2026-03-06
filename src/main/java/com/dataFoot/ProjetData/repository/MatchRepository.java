@@ -33,5 +33,6 @@ public interface MatchRepository extends JpaRepository<Match,Long> {
     List<Match> findByLeagueId(Long leagueId);
 
     Optional<Match> findByApiFootballFixtureId(Integer fixtureId);
+
 }
 
