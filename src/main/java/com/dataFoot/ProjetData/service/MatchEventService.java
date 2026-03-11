@@ -7,13 +7,9 @@ import com.dataFoot.ProjetData.model.Club;
 import com.dataFoot.ProjetData.model.Match;
 import com.dataFoot.ProjetData.model.MatchEvent;
 import com.dataFoot.ProjetData.model.Player;
-import com.dataFoot.ProjetData.repository.ClubRepository;
-import com.dataFoot.ProjetData.repository.MatchEventRepository;
-import com.dataFoot.ProjetData.repository.MatchRepository;
-import com.dataFoot.ProjetData.repository.PlayersRepository;
+import com.dataFoot.ProjetData.repository.*;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -23,42 +19,21 @@ public class MatchEventService {
     private final MatchRepository matchRepository;
     private final ClubRepository clubRepository;
     private final PlayersRepository playersRepository;
+
+    private final PlayerStatRepository playerStatRepository;
     public MatchEventService(MatchEventRepository eventRepo,
                              MatchRepository matchRepo,
-                             PlayersRepository playerRepo, MatchRepository matchRepository, ClubRepository clubRepository, PlayersRepository playersRepository) {
+                             PlayersRepository playerRepo, MatchRepository matchRepository, ClubRepository clubRepository, PlayersRepository playersRepository, PlayerStatRepository playerStatRepository) {
         this.eventRepo = eventRepo;
 
         this.matchRepository = matchRepository;
         this.clubRepository = clubRepository;
         this.playersRepository = playersRepository;
+        this.playerStatRepository = playerStatRepository;
     }
 
     // 🔹 Récupérer tous les événements d'un match pour un joueur
-    public PlayerStatDto getPlayerStats(int playerId) {
 
-        int goals = eventRepo.countByPlayerIdAndEventTypeIn(
-                playerId,
-                List.of(EventType.GOAL, EventType.PENALTY_GOAL) // si tu l’as
-        );        int yellow = eventRepo.countByPlayerIdAndEventType(playerId, EventType.YELLOW_CARD);
-        int red = eventRepo.countByPlayerIdAndEventType(playerId, EventType.RED_CARD);
-        int assists = eventRepo.countAssists(
-                playerId,
-                List.of(EventType.GOAL) // + PENALTY_GOAL si tu le gères
-        );        int total = eventRepo.findByPlayerId(playerId).size();
-
-
-
-        PlayerStatDto stats = new PlayerStatDto();
-
-        stats.setPlayerId(playerId);
-        stats.setGoals(goals);
-        stats.setYellowCard(yellow);
-        stats.setRedCard(red);
-        stats.setTotalEvents(total);
-        stats.setAssists(assists);
-
-        return stats;
-    }
 
 
     public List<MatchEventDto> getEventsByMatchId(Long matchId) {

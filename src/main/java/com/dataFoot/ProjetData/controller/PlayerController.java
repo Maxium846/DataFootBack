@@ -2,6 +2,7 @@ package com.dataFoot.ProjetData.controller;
 
 import com.dataFoot.ProjetData.dto.player.PlayerApiDto;
 import com.dataFoot.ProjetData.dto.player.PlayerInClubDto;
+import com.dataFoot.ProjetData.dto.player.PlayerStatDto;
 import com.dataFoot.ProjetData.service.PlayerImportService;
 import com.dataFoot.ProjetData.service.PlayerService;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +38,11 @@ public class PlayerController {
         return ResponseEntity.ok(playerImportService.generateOrUpdatePlayers(leagueId));
     }
 
+    @GetMapping("/{playerId}/stat")
+    public ResponseEntity<PlayerStatDto> getStatByPlayer(@PathVariable int playerId) {
+        PlayerStatDto events = playerService.getPlayerStats(playerId);
+        return ResponseEntity.ok(events);
+    }
 
 
 }

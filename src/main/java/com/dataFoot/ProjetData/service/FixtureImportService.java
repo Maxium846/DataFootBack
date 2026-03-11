@@ -63,7 +63,6 @@ public class FixtureImportService {
             throw new RuntimeException("League missing apiFootballLeagueId (ex Premier League = 39)");
         }
 
-        // Nettoyage
 
         // Clubs + init classement
         List<Club> clubs = clubRepository.findByLeagueId(leagueId);
@@ -109,7 +108,6 @@ public class FixtureImportService {
                 continue;
             }
 
-            // Journée (obligatoire chez toi)
             Integer journee = parseRoundToJournee(leagueNode.path("round").asText(null));
             if (journee == null) {
                 // ton modèle interdit NULL -> on skip ou on force 0

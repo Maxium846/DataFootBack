@@ -22,11 +22,7 @@ public class MatchEventController {
     }
 
     // 🔹 Récupérer tous les événements d'un joueur
-    @GetMapping("/player/{playerId}/stat")
-    public ResponseEntity<PlayerStatDto> getEventsByMatch(@PathVariable int playerId) {
-        PlayerStatDto events = eventService.getPlayerStats(playerId);
-        return ResponseEntity.ok(events);
-    }
+
 
 
     // 🔹 Ajouter un événement (but, passe, carton, etc.)

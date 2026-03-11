@@ -41,9 +41,9 @@ public class Player {
     private String nation;
     @Column(nullable = true)
     private LocalDate dateDeNaissance;
-    @OneToOne(mappedBy = "player", cascade = CascadeType.ALL,orphanRemoval=true)
 
-    private PlayerStats playerStats;
+    @OneToMany(mappedBy = "player")
+    private List<PlayerStats> playerStats;
     @Transient
     public Integer getAge(){
         if(dateDeNaissance == null) return null;
