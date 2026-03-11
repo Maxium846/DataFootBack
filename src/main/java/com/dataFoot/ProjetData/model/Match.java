@@ -14,7 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-
+@Builder
 public class Match {
 
     @Id
@@ -31,11 +31,8 @@ public class Match {
     @ManyToOne(optional = false)
     @JoinColumn(name = "away_club_id", nullable = false)
     private Club awayClub;
-
-
     private Integer homeGoals;
     private Integer awayGoals;
-
     private boolean played;
 
     @ManyToOne(optional = false)

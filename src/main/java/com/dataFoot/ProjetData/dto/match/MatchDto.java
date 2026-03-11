@@ -1,10 +1,14 @@
 package com.dataFoot.ProjetData.dto.match;
 
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDate;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class MatchDto {
 
     private Long id;

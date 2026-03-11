@@ -12,7 +12,6 @@ public class MatchLineUpMapper {
         matchLineUpDto.setStarter(matchLineUpDto.getStarter());
         matchLineUpDto.setClubId(matchLineUp.getClub().getId());
         matchLineUpDto.setPlayerName(matchLineUp.getPlayer().getFirstName() + " " + matchLineUp.getPlayer().getLastName());
-
         return matchLineUpDto;
     }
 }

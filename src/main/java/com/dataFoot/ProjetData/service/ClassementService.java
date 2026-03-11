@@ -3,7 +3,6 @@ package com.dataFoot.ProjetData.service;
 import com.dataFoot.ProjetData.dto.classement.ClassementDto;
 import com.dataFoot.ProjetData.mapper.ClassementMapper;
 import com.dataFoot.ProjetData.model.Classement;
-import com.dataFoot.ProjetData.model.Club;
 import com.dataFoot.ProjetData.model.League;
 import com.dataFoot.ProjetData.model.Match;
 import com.dataFoot.ProjetData.repository.ClassementRepository;
@@ -42,28 +41,6 @@ public class ClassementService {
                     .map(ClassementMapper::toDto)
                     .toList();
         }
-
-
-
-    private Classement getOrCreateClassement(League league, Club club) {
-        return classementRepository
-                .findByLeagueAndClub(league, club)
-                .orElseGet(() -> {
-                    Classement c = new Classement();
-                    c.setLeague(league);
-                    c.setClub(club);
-                    c.setPoints(0);
-                    c.setPlayed(0);
-                    c.setWins(0);
-                    c.setDraws(0);
-                    c.setLosses(0);
-                    c.setGoalsFor(0);
-                    c.setGoalsAgainst(0);
-                    c.setGoalDifference(0);
-                    return classementRepository.save(c);
-                });
-    }
-
 
 
     @Transactional
@@ -131,25 +108,6 @@ public class ClassementService {
         );
 
         classementRepository.saveAll(classementByClub.values());
-    }
-
-
-
-    @Transactional
-    public List<ClassementDto> updateMatchScoreAndRecalculate(Long matchId, int homeGoals, int awayGoals) {
-        Match match = matchRepository.findById(matchId)
-                .orElseThrow(() -> new RuntimeException("Match introuvable"));
-
-        match.setHomeGoals(homeGoals);
-        match.setAwayGoals(awayGoals);
-        match.setPlayed(true);
-        matchRepository.save(match);
-
-        // Recalculer le classement pour la ligue du match
-        recalculateLeague(match.getLeague());
-
-        // ⚡ Renvoyer directement le classement mis à jour et trié
-        return getClassementByLeague(match.getLeague().getId());
     }
 
 }

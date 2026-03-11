@@ -17,19 +17,6 @@ public interface MatchRepository extends JpaRepository<Match,Long> {
     List<Match> findByLeagueAndPlayedTrue(League leagueId);
     List<Match> findMatchesByLeagueIdOrderByJourneeAsc(Long leagueId);
 
-    @Transactional
-    @Modifying
-    @Query("DELETE FROM Match m WHERE m.league.id = :leagueId")
-    void deleteByLeagueId(@Param("leagueId") Long leagueId);
-
-    boolean existsByLeagueAndHomeClubAndAwayClubAndJournee(
-            League league,
-            Club homeClub,
-            Club awayClub,
-            Integer journee
-    );
-
-
     List<Match> findByLeagueId(Long leagueId);
 
     Optional<Match> findByApiFootballFixtureId(Integer fixtureId);
