@@ -9,6 +9,8 @@ import com.dataFoot.ProjetData.repository.ClubRepository;
 import com.dataFoot.ProjetData.repository.LeagueRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
+import org.hibernate.validator.internal.util.logging.Log;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -65,12 +67,17 @@ public class ClubService {
         return ClubMapper.toDto(updated);
     }
 
-    public List<ClubDtoApi> generateOrUpdateClubsApiFootball(Long leagueId, int season) {
+    @Transactional
+    public List<ClubDtoApi> importOrUpdateClubsApiFootball(Long leagueId, int season) {
         List<ClubDtoApi> result = new ArrayList<>();
 
         League league = leagueRepository.findById(leagueId)
-                .orElseThrow(() -> new RuntimeException("League not found"));
+                .orElseThrow(() -> new RuntimeException("La ligue avec l'id  : " + leagueId + "n'esiste pas"));
         Integer apiFootballLeagueId = league.getApiFootballLeague();
+        if(apiFootballLeagueId == null){
+            throw  new RuntimeException("la ligue avec l'id" + leagueId + "n'a pas de leauguefootballApiId correspondant en base ");
+        }
+
 
         try {
             // 1) Appel API-FOOTBALL
@@ -84,16 +91,18 @@ public class ClubService {
             JsonNode response = root.get("response");
 
             if (response == null || !response.isArray()) {
-                throw new RuntimeException("Réponse API inattendue: 'response' absent");
+                throw new RuntimeException("Réponse API inattendue: 'response' absente ou ce n'est pas un tableau");
             }
 
             for (JsonNode item : response) {
 
                 JsonNode teamNode = item.get("team");
-                if (teamNode == null) continue;
+                if (teamNode == null || teamNode.isNull()){
+                    continue;
+                }
                 long apiTeamId = teamNode.get("id").asLong();
                 String name = teamNode.get("name").asText();
-                int fondation = teamNode.get("founded").asInt();
+                Integer fondation = teamNode.get("founded").asInt();
 
                 String coachName = null;
 

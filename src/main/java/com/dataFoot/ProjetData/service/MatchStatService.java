@@ -1,6 +1,7 @@
 package com.dataFoot.ProjetData.service;
 
 import com.dataFoot.ProjetData.dto.match.MatchstatDto;
+import com.dataFoot.ProjetData.exception.RateLimitException;
 import com.dataFoot.ProjetData.mapper.MatchStatMapper;
 import com.dataFoot.ProjetData.model.Club;
 import com.dataFoot.ProjetData.model.Match;
@@ -64,7 +65,7 @@ public void importStatMatch(Long leagueId) throws Exception {
             int fixtureId = match.getApiFootballFixtureId();
 
             String url ="https://v3.football.api-sports.io/fixtures/statistics?fixture=" + fixtureId ;
-           JsonNode reponse = callApi(url).path("response");
+           JsonNode reponse = callApiWithRetry(url).path("response");
 
 
             for (JsonNode json : reponse){
@@ -158,7 +159,7 @@ public void importStatMatch(Long leagueId) throws Exception {
 
 
 
-                    MatchStat matchStat = new MatchStat();
+                    MatchStat matchStat = matchStatRepository.findByMatchIdAndClubId_Id(match.getId(),clubs.getId()).orElseGet(MatchStat::new);
                     matchStat.setClubId(clubs);
                     matchStat.setMatch(match);
                     matchStat.setFouls(fouls);
@@ -182,48 +183,45 @@ public void importStatMatch(Long leagueId) throws Exception {
 
                     matchStatRepository.save(matchStat);
 
-
-
-
                 }
-
-
-
 
             }
 
-
-
         }
 
+    private JsonNode callApiWithRetry(String url) throws Exception {
 
+        int maxRetries = 8;
+        long baseWaitMs = 150;   // ✅ réduit (600ms c’est énorme)
+        long backoffMs = 1200;
 
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
 
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .GET()
+                    .header("x-apisports-key", apiSportsKey)
+                    .header("Accept", "application/json")
+                    .build();
 
-    private JsonNode callApi(String url) throws Exception {
-        HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .GET()
-                .header("x-apisports-key", apiSportsKey)
-                .header("Accept", "application/json")
-                .build();
-        HttpResponse<String> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
-        if (resp.statusCode() >= 400) throw new RuntimeException("API error " + resp.statusCode());
-        return objectMapper.readTree(resp.body());
-    }
+            HttpResponse<String> resp = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-    private String fetchUrlWithHeaders(String url) throws Exception {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .GET()
-                .header("x-apisports-key", apiSportsKey)
-                .header("Accept", "application/json")
-                .build();
+            if (resp.statusCode() == 429) {
+                Thread.sleep(backoffMs);
+                backoffMs = Math.min(backoffMs * 2, 20000);
+                continue;
+            }
 
-        HttpResponse<String> resp = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        if (resp.statusCode() >= 400) {
-            throw new RuntimeException("API error " + resp.statusCode() + " body=" + resp.body());
+            if (resp.statusCode() >= 400) {
+                throw new RuntimeException("API error " + resp.statusCode() + " body=" + resp.body());
+            }
+
+            Thread.sleep(baseWaitMs);
+            return objectMapper.readTree(resp.body());
         }
-        return resp.body();
+
+        throw new RateLimitException("Too many 429 retries for url=" + url);
     }
+
+
 }

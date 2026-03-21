@@ -2,6 +2,7 @@ package com.dataFoot.ProjetData.service;
 
 import com.dataFoot.ProjetData.dto.player.PlayerApiDto;
 import com.dataFoot.ProjetData.enumeration.Position;
+import com.dataFoot.ProjetData.exception.RateLimitException;
 import com.dataFoot.ProjetData.model.Club;
 import com.dataFoot.ProjetData.model.League;
 import com.dataFoot.ProjetData.model.Player;
@@ -48,7 +49,7 @@ public class PlayerImportService {
     }
 
     @Transactional
-    public List<PlayerApiDto> generateOrUpdatePlayers(Long leagueId) {
+    public Void generateOrUpdatePlayers(Long leagueId) throws Exception {
 
         League league = leagueRepository.findById(leagueId)
                 .orElseThrow(() -> new RuntimeException("League not found"));
@@ -58,106 +59,120 @@ public class PlayerImportService {
             throw new RuntimeException("League missing apiFootballLeagueId (ex: Premier League = 39)");
         }
 
-        int season = 2025;
-        List<PlayerApiDto> result = new ArrayList<>();
+        List<Club> clubs = clubRepository.findByLeagueId(leagueId);
 
-        try {
-            int page = 1;
-            int totalPages = 1;
+        for (Club club : clubs) {
 
-            while (page <= totalPages) {
-                String url = BASE_URL + "/players?league=" + apiFootballLeagueId
-                        + "&season=" + season
-                        + "&page=" + page;
+            Long apiFootballClubId = club.getApiFootballTeamId();
+            String url = BASE_URL + "/players/squads?team=" + apiFootballClubId;
+            JsonNode response = callApiWithRetry(url).path("response");
+            if (response == null || !response.isArray()) break;
 
-                String json = fetchUrlWithHeaders(url);
-                JsonNode root = objectMapper.readTree(json);
+            for (JsonNode item : response) {
 
-                totalPages = root.path("paging").path("total").asInt(1);
+                JsonNode playerNode = item.path("players");
+                if (playerNode.isMissingNode() || playerNode.isNull()) continue;
 
-                JsonNode response = root.get("response");
-                if (response == null || !response.isArray()) break;
+                for (JsonNode jsonNode : playerNode) {
+                    int apiPlayerId = jsonNode.path("id").asInt();
+                    String firstName = text(jsonNode, "name");
+                    String apiPosition = text(jsonNode, "position");
+                    Position position = mapPositionFromApiFootball(apiPosition);
+                    int number = jsonNode.path("number").asInt();
 
-                for (JsonNode item : response) {
-
-                    JsonNode playerNode = item.path("player");
-                    JsonNode statistics = item.path("statistics");
-
-                    if (playerNode.isMissingNode() || playerNode.isNull()) continue;
-
-                    int apiPlayerId = playerNode.path("id").asInt();
-                    String firstName = text(playerNode, "firstname");
-                    String lastName = text(playerNode, "lastname");
-                    String displayName = text(playerNode, "name");
-                    String nationality = text(playerNode, "nationality");
-
-                    // birth.date peut être null
-                    LocalDate birthDate = null;
-                    JsonNode birth = playerNode.path("birth");
-                    if (!birth.isMissingNode() && birth.hasNonNull("date")) {
-                        birthDate = LocalDate.parse(birth.get("date").asText());
-                    }
-
-                    // --- Choix d'une "stat principale" ---
-
-                    JsonNode mainStat = (statistics.isArray() && statistics.size() > 0)
-                            ? statistics.get(0)
-                            : null;
-
-                    Long apiTeamId = null;
-                    Position position = null;
-
-                    if (mainStat != null) {
-                        if (!mainStat.path("team").path("id").isMissingNode()) {
-                            apiTeamId = mainStat.path("team").path("id").asLong();
-                        }
-                        String apiPos = mainStat.path("games").path("position").asText(null);
-                        position = mapPositionFromApiFootball(apiPos);
-                    }
-
-                    // --- find or create player ---
                     Player player = playerRepository.findByApiFootballPlayerId(apiPlayerId)
                             .orElseGet(Player::new);
 
-                    player.setApiFootballPlayerId(apiPlayerId);
-                    player.setFirstName(firstName != null ? firstName : displayName);
-                    player.setLastName(lastName);
-                    player.setNation(nationality);
-                    player.setDateDeNaissance(birthDate);
-                    player.setPosition(position);
+                    LocalDate birthDate = player.getDateDeNaissance();
+                    String nation = player.getNation();
+                    String taille = player.getTaille();
+                    String poids = player.getPoids();
 
-                    // --- rattacher club via apiFootballTeamId ---
-                    if (apiTeamId != null) {
-                        Club club = clubRepository
-                                .findByLeagueIdAndApiFootballTeamId(leagueId, apiTeamId)
-                                .orElse(null);
-                        player.setClub(club);
-                    } else {
-                        player.setClub(null);
+                    boolean needProfile =
+                            birthDate == null ||
+                                    nation == null ||
+                                    nation.isBlank() ||
+                                    taille == null ||
+                                    taille.isBlank() ||
+                                    poids == null ||
+                                    poids.isBlank();
+
+                    if (needProfile) {
+                        String urlPlayer = BASE_URL + "/players/profiles?player=" + apiPlayerId;
+                        JsonNode responsePlayer = callApiWithRetry(urlPlayer).path("response");
+
+                        if (responsePlayer != null && responsePlayer.isArray() && !responsePlayer.isEmpty()) {
+                            JsonNode itemPlayer = responsePlayer.get(0);
+                            JsonNode playerNodes = itemPlayer.path("player");
+
+                            if (!playerNodes.isMissingNode() && !playerNodes.isNull()) {
+                                JsonNode birthDateNode = playerNodes.path("birth").path("date");
+                                if (!birthDateNode.isMissingNode()
+                                        && !birthDateNode.isNull()
+                                        && !birthDateNode.asText().isBlank()) {
+                                    birthDate = LocalDate.parse(birthDateNode.asText());
+                                }
+
+                                nation = playerNodes.path("nationality").asText(null);
+                                taille = playerNodes.path("height").asText(null);
+                                poids = playerNodes.path("weight").asText(null);
+                            }
+                        }
                     }
 
-                    Player saved = playerRepository.save(player);
+                    player.setApiFootballPlayerId(apiPlayerId);
+                    player.setFirstName(firstName);
+                    player.setPosition(position);
+                    player.setNumber(number);
+                    player.setClub(club);
+                    player.setDateDeNaissance(birthDate);
+                    player.setNation(nation);
+                    player.setPoids(poids);
+                    player.setTaille(taille);
 
-                    result.add(new PlayerApiDto(
-                            saved.getId(),
-                            saved.getClub() != null ? saved.getClub().getId() : null,
-                            saved.getFirstName(),
-                            saved.getLastName(),
-                            saved.getPosition(),
-                            saved.getDateDeNaissance(),
-                            saved.getNation(),
-                            saved.getApiFootballPlayerId()
-                    ));
+                    playerRepository.save(player);
                 }
 
-                page++;
+            }
+        }
+        return null;
+
+    }
+
+
+
+    private JsonNode callApiWithRetry(String url) throws Exception {
+
+        int maxRetries = 8;
+        long baseWaitMs = 150;   // ✅ réduit (600ms c’est énorme)
+        long backoffMs = 1200;
+
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .GET()
+                    .header("x-apisports-key", apiSportsKey)
+                    .header("Accept", "application/json")
+                    .build();
+
+            HttpResponse<String> resp = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (resp.statusCode() == 429) {
+                Thread.sleep(backoffMs);
+                backoffMs = Math.min(backoffMs * 2, 20000);
+                continue;
             }
 
-        } catch (Exception e) {
-            throw new RuntimeException("Erreur import joueurs API-FOOTBALL", e);
+            if (resp.statusCode() >= 400) {
+                throw new RuntimeException("API error " + resp.statusCode() + " body=" + resp.body());
+            }
+
+            Thread.sleep(baseWaitMs);
+            return objectMapper.readTree(resp.body());
         }
 
-        return result;
+        throw new RateLimitException("Too many 429 retries for url=" + url);
     }
 
     private String fetchUrlWithHeaders(String url) throws IOException, InterruptedException {

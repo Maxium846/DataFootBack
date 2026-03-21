@@ -1,7 +1,6 @@
 package com.dataFoot.ProjetData.controller;
 
 import com.dataFoot.ProjetData.dto.match.MatchstatDto;
-import com.dataFoot.ProjetData.model.MatchStat;
 import com.dataFoot.ProjetData.service.MatchStatService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

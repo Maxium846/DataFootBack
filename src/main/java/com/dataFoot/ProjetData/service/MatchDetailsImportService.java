@@ -17,6 +17,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -71,6 +72,12 @@ public class MatchDetailsImportService {
         Map<Long, Club> clubByApiTeamId = clubRepository.findByLeagueId(leagueId).stream()
                 .filter(c -> c.getApiFootballTeamId() != null)
                 .collect(Collectors.toMap(Club::getApiFootballTeamId, c -> c));
+        // rresultat requete  : { 33 -> Arsenal ,
+        //                        34-> Manchester}
+
+        // evite ce genre de code ( for( Club c : clubs) {
+    // if(c.getApiFootballTeamId().equals(apiId)) return c   }
+        // optimisation du cope a 0((1)) au lieu de O((n))
 
         int eventsImported = 0;
         int eventsSkippedAlreadyDone = 0;
@@ -97,6 +104,12 @@ public class MatchDetailsImportService {
                 continue;
             }
 
+            // ---------- LINEUPS ----------
+
+            if (fetchLineups) {
+                lineupsUpserted += importLineupsForMatchUpsertOptimized(match, fixtureId, leagueId, clubByApiTeamId);
+
+            }
             // ---------- EVENTS ----------
             if (fetchEvents) {
                 boolean alreadyImported = matchEventRepository.existsByMatchId(match.getId());
@@ -111,10 +124,7 @@ public class MatchDetailsImportService {
                 }
             }
 
-            // ---------- LINEUPS ----------
-            if (fetchLineups) {
-                lineupsUpserted += importLineupsForMatchUpsertOptimized(match, fixtureId, leagueId, clubByApiTeamId);
-            }
+
         }
 
         return "OK leagueId=" + leagueId
@@ -245,6 +255,7 @@ public class MatchDetailsImportService {
             Map<Long, MatchLineUp> existingByPlayerId = matchLineUpRepository.findByMatchId(match.getId()).stream()
                     .collect(Collectors.toMap(lu -> lu.getPlayer().getId(), lu -> lu));
 
+
             // collect api ids
             Set<Integer> apiPlayerIds = new HashSet<>();
             for (JsonNode teamLineup : response) {
@@ -265,7 +276,56 @@ public class MatchDetailsImportService {
             }
 
             Map<Integer, Player> playerByApiId = playerRepository.findByApiFootballPlayerIdIn(apiPlayerIds).stream()
-                    .collect(Collectors.toMap(Player::getApiFootballPlayerId, p -> p));
+                    .collect(Collectors.toMap(Player::getApiFootballPlayerId, Function.identity()));
+
+            Set<Integer> missingApiPlayerIds = new HashSet<>(apiPlayerIds);
+            missingApiPlayerIds.removeAll(playerByApiId.keySet());
+
+            for (Integer playerMiss : missingApiPlayerIds) {
+
+                LocalDate birthDate = null;
+                String nation = null;
+                String taille = null;
+                String poids = null;
+                String firstname = null;
+
+                String urlMisse = BASE_URL + "/players/profiles?player=" + playerMiss;
+                JsonNode responsePlayer = callApiWithRetry(urlMisse).path("response");
+
+                if (responsePlayer != null && responsePlayer.isArray() && !responsePlayer.isEmpty()) {
+                    JsonNode itemPlayer = responsePlayer.get(0);
+                    JsonNode playerNode = itemPlayer.path("player");
+
+                    if (!playerNode.isMissingNode() && !playerNode.isNull()) {
+                        JsonNode birthDateNode = playerNode.path("birth").path("date");
+                        if (!birthDateNode.isMissingNode()
+                                && !birthDateNode.isNull()
+                                && !birthDateNode.asText().isBlank()) {
+                            birthDate = LocalDate.parse(birthDateNode.asText());
+                        }
+
+                        nation = playerNode.path("nationality").asText(null);
+                        taille = playerNode.path("height").asText(null);
+                        poids = playerNode.path("weight").asText(null);
+                        firstname = playerNode.path("name").asText(null);
+                    }
+                }
+
+                Player player = new Player();
+                player.setApiFootballPlayerId(playerMiss);
+                player.setNation(nation);
+                player.setDateDeNaissance(birthDate);
+                player.setPoids(poids);
+                player.setTaille(taille);
+                player.setFirstName(firstname);
+
+                Player savedPlayer = playerRepository.save(player);
+
+                // très important
+                playerByApiId.put(savedPlayer.getApiFootballPlayerId(), savedPlayer);
+            }
+
+
 
             Set<Long> seenPlayerIds = new HashSet<>();
             List<MatchLineUp> toSave = new ArrayList<>();
@@ -315,7 +375,7 @@ public class MatchDetailsImportService {
                                   Map<Integer, Player> playerByApiId,
                                   Map<Long, MatchLineUp> existingByPlayerId,
                                   Set<Long> seenPlayerIds,
-                                  List<MatchLineUp> toSave) {
+                                  List<MatchLineUp> toSave) throws Exception {
 
         Integer apiPlayerId = playerNode.path("id").isMissingNode() ? null : playerNode.path("id").asInt();
         if (apiPlayerId == null) return;

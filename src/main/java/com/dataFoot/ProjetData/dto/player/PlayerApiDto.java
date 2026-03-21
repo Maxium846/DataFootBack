@@ -1,6 +1,7 @@
 package com.dataFoot.ProjetData.dto.player;
 
 import com.dataFoot.ProjetData.enumeration.Position;
+import com.dataFoot.ProjetData.model.Club;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,5 +21,9 @@ public class PlayerApiDto {
     private LocalDate dateDeNaissance;
     private  String nation;
     private Integer apiFootballPlayerId;
+
+    public PlayerApiDto(Integer number, Long id, Position position, Integer apiFootballPlayerId, String firstName) {
+    }
+
 
 }

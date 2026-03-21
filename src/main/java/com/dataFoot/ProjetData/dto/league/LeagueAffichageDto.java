@@ -7,4 +7,6 @@ public class LeagueAffichageDto {
 
     private Long id;
     private String name;
+    private String country;
+    private int apiFootballId;
 }

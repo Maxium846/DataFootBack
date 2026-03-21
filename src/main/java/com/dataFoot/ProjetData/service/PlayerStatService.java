@@ -2,6 +2,7 @@ package com.dataFoot.ProjetData.service;
 
 import com.dataFoot.ProjetData.dto.player.PlayerStatDto;
 import com.dataFoot.ProjetData.dto.player.PlayerStatMatchDto;
+import com.dataFoot.ProjetData.enumeration.Position;
 import com.dataFoot.ProjetData.mapper.PlayerStatMapper;
 import com.dataFoot.ProjetData.model.Club;
 import com.dataFoot.ProjetData.model.Match;
@@ -36,10 +37,10 @@ public class PlayerStatService {
     private final  ClubRepository clubRepository;
     private final ObjectMapper objectMapper;
 
-    public PlayerStatService(PlayerStatRepository playerStatRepository, PlayersRepository playersRepository, PlayersRepository playersRepository1, MatchRepository matchRepository, ClubRepository clubRepository, ObjectMapper objectMapper) {
+    public PlayerStatService(PlayerStatRepository playerStatRepository, PlayersRepository playersRepository,  MatchRepository matchRepository, ClubRepository clubRepository, ObjectMapper objectMapper) {
         this.playerStatRepository = playerStatRepository;
-        this.playersRepository = playersRepository1;
         this.matchRepository = matchRepository;
+        this.playersRepository = playersRepository;
         this.clubRepository = clubRepository;
         this.objectMapper = objectMapper;
     }
@@ -51,7 +52,7 @@ public class PlayerStatService {
 
         Player player = playersRepository.findById(id).orElseThrow(()-> new RuntimeException("l'id du jouuer n'existe pas"));
 
-        PlayerStats playerStats = playerStatRepository.findByPlayer_Id(player.getId());
+        PlayerStats playerStats = playerStatRepository.findByPlayer_Id(player.getId()).orElseThrow();
 
         return PlayerStatMapper.toDto(playerStats);
 
@@ -62,26 +63,60 @@ public class PlayerStatService {
 
         List<Match> matches = matchRepository.findByLeagueId(leagueId);
 
+        List<Club> clubs = clubRepository.findByLeagueId(leagueId);
         for (Match match : matches) {
 
             int fixtureId = match.getApiFootballFixtureId();
             String url = "https://v3.football.api-sports.io/fixtures/players?fixture=" + fixtureId;
-            JsonNode response = callApi(url).path(("response"));
+            JsonNode response = callApi(url).path("response");
+
+            if (response == null || !response.isArray()) {
+                continue;
+            }
 
             for (JsonNode json : response) {
 
-                Long apiteamId = json.path("team").path("id").isMissingNode() ? null : json.path("team").path("id").asLong();
-                if (apiteamId == null) continue;
-                Club club = clubRepository.findByLeagueId(leagueId).stream().filter(c -> Objects.equals(c.getApiFootballTeamId(),apiteamId)).findFirst().orElse(null);
+                Long apiTeamId = json.path("team").path("id").isMissingNode()
+                        ? null
+                        : json.path("team").path("id").asLong();
 
-                for (JsonNode playerNode : json.path("players")) {
+                if (apiTeamId == null) {
+                    continue;
+                }
 
-                    Integer apiPlayerId = playerNode.path("player").path("id").isMissingNode() ? null : playerNode.path("player").path("id").asInt();
-                    String apiPlayerName = playerNode.path("player").path("name").isMissingNode() ? null : playerNode.path("player").path("name").asText();
-                if (apiPlayerId == null) continue;
-                Player player = playersRepository.findByApiFootballPlayerId(apiPlayerId).orElseThrow(null);
+                Club club = clubs.stream()
+                        .filter(c -> Objects.equals(c.getApiFootballTeamId(), apiTeamId))
+                        .findFirst()
+                        .orElse(null);
+
+                if (club == null) {
+                    System.out.println("Club introuvable pour apiTeamId = " + apiTeamId);
+                    continue;
+                }
+
+                JsonNode playersArray = json.path("players");
+                if (playersArray == null || !playersArray.isArray()) {
+                    continue;
+                }
+
+                for (JsonNode playerNode : playersArray) {
+
+                    Integer apiPlayerId = playerNode.path("player").path("id").isMissingNode()
+                            ? null
+                            : playerNode.path("player").path("id").asInt();
+
+                    String apiPlayerName = playerNode.path("player").path("name").isMissingNode()
+                            ? null
+                            : playerNode.path("player").path("name").asText();
+
+                    if (apiPlayerId == null) {
+                        continue;
+                    }
+
+                    Player player = playersRepository.findByApiFootballPlayerId(apiPlayerId).orElse(null);
+
                     if (player == null) {
-                        System.out.println("Joueur introuvable en base : " + apiPlayerId + " - " + apiPlayerName);
+                        System.out.println("Joueur absent de la base : " + apiPlayerId + " - " + apiPlayerName);
                         continue;
                     }
 
@@ -174,7 +209,9 @@ public class PlayerStatService {
                     Integer saved = statNode.path("penalty").path("saved").isNull()
                             ? null : statNode.path("penalty").path("saved").asInt();
 
-                    PlayerStats stat = new PlayerStats();
+
+
+                    PlayerStats stat = playerStatRepository.findByPlayer_Id(player.getId()).orElseGet(PlayerStats :: new);
                     stat.setClub(club);
                     stat.setMatch(match);
                     stat.setPlayer(player);

@@ -3,6 +3,7 @@ package com.dataFoot.ProjetData.service;
 import com.dataFoot.ProjetData.dto.match.MatchLineUpDto;
 import com.dataFoot.ProjetData.model.League;
 import com.dataFoot.ProjetData.model.MatchLineUp;
+import com.dataFoot.ProjetData.model.PlayerStats;
 import com.dataFoot.ProjetData.repository.*;
 import org.springframework.stereotype.Service;
 
@@ -20,15 +21,17 @@ public class MatchLineUpService {
 
     private final LeagueRepository leagueRepository;
 
+    private final PlayerStatRepository playerStatRepository;
     public MatchLineUpService(MatchLineUpRepository lineupRepo,
                               MatchRepository matchRepo,
                               PlayersRepository playerRepo,
-                              ClubRepository clubRepo, LeagueRepository leagueRepository) {
+                              ClubRepository clubRepo, LeagueRepository leagueRepository, PlayerStatRepository playerStatRepository) {
         this.lineupRepo = lineupRepo;
         this.matchRepo = matchRepo;
         this.playerRepo = playerRepo;
         this.clubRepo = clubRepo;
         this.leagueRepository = leagueRepository;
+        this.playerStatRepository = playerStatRepository;
     }
 
     // 🔹 Récupérer la composition d'un match
@@ -63,9 +66,12 @@ public class MatchLineUpService {
     // 🔹 Mapper entité → DTO
     private MatchLineUpDto toDto(MatchLineUp lineup) {
         MatchLineUpDto dto = new MatchLineUpDto();
+
+        PlayerStats  notePlayer= playerStatRepository.findByPlayer_IdAndMatch_Id(lineup.getPlayer().getId(),lineup.getMatch().getId());
+        dto.setNote(notePlayer.getNote());
         dto.setId(lineup.getId());
         dto.setPlayerId(lineup.getPlayer().getId());
-        dto.setPlayerName(lineup.getPlayer().getFirstName() + " " + lineup.getPlayer().getLastName());
+        dto.setPlayerName(lineup.getPlayer().getFirstName());
         dto.setClubId(lineup.getClub().getId());
         dto.setPosition(lineup.getPosition());
         dto.setMatchId(lineup.getMatch().getId());

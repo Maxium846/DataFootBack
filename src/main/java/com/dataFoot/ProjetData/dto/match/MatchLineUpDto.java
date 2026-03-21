@@ -14,4 +14,5 @@ public class MatchLineUpDto {
     private Position position;
     private Long matchId;
     private Boolean starter;
+    private String note;
 }

@@ -32,14 +32,12 @@ public class Player {
     private String firstName;
     private String lastName;
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column
     private Position position;
     @ManyToOne
-    @JoinColumn(name = "club_id",nullable = false)
+    @JoinColumn(name = "club_id")
     private Club club;
-    @Column(nullable = true)
     private String nation;
-    @Column(nullable = true)
     private LocalDate dateDeNaissance;
 
     @OneToMany(mappedBy = "player")
@@ -54,4 +52,9 @@ public class Player {
     private List<MatchLineUp> matchLineUps = new ArrayList<>();
     @Column(unique = true)
     private Integer apiFootballPlayerId;
+
+    private Integer number;
+    private String taille;
+    private String poids;
+
 }

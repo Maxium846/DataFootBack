@@ -15,6 +15,8 @@ public class LeagueMapper {
         LeagueAffichageDto leagueAffichageDto = new LeagueAffichageDto();
         leagueAffichageDto.setId(league.getId());
         leagueAffichageDto.setName(league.getName());
+        leagueAffichageDto.setCountry(league.getCountry());
+        leagueAffichageDto.setApiFootballId(league.getApiFootballLeague());
         return leagueAffichageDto;
     }
     public static LeagueDto toDto(League league){
@@ -22,6 +24,8 @@ public class LeagueMapper {
         LeagueDto leagueDto = new LeagueDto();
         leagueDto.setId(league.getId());
         leagueDto.setName(league.getName());
+        leagueDto.setCountry(league.getCountry());
+        leagueDto.setApiFootballId(league.getApiFootballLeague());
         return leagueDto;
     }
     public static LeagueByIdDto toDetailDto(League league){
@@ -40,6 +44,7 @@ public class LeagueMapper {
         League league = new League();
         league.setCountry(leagueDto.getCountry());
         league.setName(leagueDto.getName());
+        league.setApiFootballLeague(leagueDto.getApiFootballId());
 
 
         return league;

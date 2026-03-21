@@ -66,6 +66,7 @@ public class FixtureImportService {
 
         // Clubs + init classement
         List<Club> clubs = clubRepository.findByLeagueId(leagueId);
+        initClassement(league ,clubs);
         if (clubs.size() < 2) throw new RuntimeException("Pas assez de clubs");
 
         int season = 2025; // 2025/2026

@@ -37,7 +37,7 @@ public class ClubController {
     @PostMapping("/generate-clubs/{leagueId}/{saison}")
     public ResponseEntity<List<ClubDtoApi>> generateClubs(@PathVariable Long leagueId, @PathVariable int saison) {
         try {
-            List<ClubDtoApi> dtos = clubService.generateOrUpdateClubsApiFootball(leagueId,saison);
+            List<ClubDtoApi> dtos = clubService.importOrUpdateClubsApiFootball(leagueId,saison);
             return ResponseEntity.ok(dtos);
         } catch (RuntimeException e) {
             e.printStackTrace();
