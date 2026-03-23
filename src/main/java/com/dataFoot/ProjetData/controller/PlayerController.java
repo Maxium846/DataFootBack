@@ -1,17 +1,13 @@
 package com.dataFoot.ProjetData.controller;
 
-import com.dataFoot.ProjetData.dto.player.PlayerApiDto;
 import com.dataFoot.ProjetData.dto.player.PlayerInClubDto;
-import com.dataFoot.ProjetData.dto.player.PlayerStatClassementDto;
 import com.dataFoot.ProjetData.dto.player.PlayerStatDto;
 import com.dataFoot.ProjetData.service.PlayerImportService;
 import com.dataFoot.ProjetData.service.PlayerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/api/players")
@@ -46,14 +42,6 @@ public class PlayerController {
         PlayerStatDto events = playerService.getPlayerStats(playerId);
         return ResponseEntity.ok(events);
     }
-
-
-    @GetMapping("/stat/{leagueId}")
-    public ResponseEntity <List<PlayerStatClassementDto>> getStat(@PathVariable Long leagueId) {
-        List<PlayerStatClassementDto> playerStatClassementDto =playerService.getStat(leagueId);
-         return ResponseEntity.ok(playerStatClassementDto);
-     }
-
 
 
 

@@ -1,12 +1,10 @@
 package com.dataFoot.ProjetData.service;
 import com.dataFoot.ProjetData.dto.player.PlayerInClubDto;
-import com.dataFoot.ProjetData.dto.player.PlayerStatClassementDto;
 import com.dataFoot.ProjetData.dto.player.PlayerStatDto;
 import com.dataFoot.ProjetData.enumeration.EventType;
 import com.dataFoot.ProjetData.mapper.PlayerMapper;
 import com.dataFoot.ProjetData.model.Club;
 import com.dataFoot.ProjetData.model.Player;
-import com.dataFoot.ProjetData.model.PlayerStats;
 import com.dataFoot.ProjetData.repository.*;
 import org.springframework.stereotype.Service;
 
@@ -83,30 +81,8 @@ public class PlayerService {
     }
 
 
-    public List<PlayerStatClassementDto> getStat(Long leagueId) {
-
-        List<Club> clubs = clubRepository.findByLeagueId(leagueId);
-        List<PlayerStatClassementDto> joueur = new ArrayList<>();
-
-        for (Club c : clubs) {
-
-            List<Player> players = playerRepository.findByClubId(c.getId());
-            for (Player p : players) {
-                int countBut = matchStatRepository.sumTotalGoalByPlayerId(p.getId());
-                PlayerStatClassementDto playerStatClassementDto = new PlayerStatClassementDto();
-                playerStatClassementDto.setTotalBut(countBut);
-                playerStatClassementDto.setPlayerId(p.getId());
-                playerStatClassementDto.setName(p.getFirstName());
-                if (p.getClub() != null) {
-                    playerStatClassementDto.setClubName(p.getClub().getName());
-                }
-                joueur.add(playerStatClassementDto);
 
 
-            }
 
-        }
-        return joueur.stream().sorted(Comparator.comparing(PlayerStatClassementDto::getTotalBut).reversed()).filter(j -> j.getTotalBut()>7).toList();
-    }
 
 }

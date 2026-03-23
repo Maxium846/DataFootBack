@@ -1,8 +1,8 @@
 package com.dataFoot.ProjetData.service;
 
-import com.dataFoot.ProjetData.dto.player.PlayerStatDto;
+import com.dataFoot.ProjetData.dto.player.playerStat.PlayerStatButeurDto;
 import com.dataFoot.ProjetData.dto.player.PlayerStatMatchDto;
-import com.dataFoot.ProjetData.enumeration.Position;
+import com.dataFoot.ProjetData.dto.player.playerStat.PlayerStatPasseurDto;
 import com.dataFoot.ProjetData.mapper.PlayerStatMapper;
 import com.dataFoot.ProjetData.model.Club;
 import com.dataFoot.ProjetData.model.Match;
@@ -21,9 +21,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -46,6 +44,15 @@ public class PlayerStatService {
     }
 
 
+    public List<PlayerStatButeurDto> getStat(Long leagueId) {
+
+        return playerStatRepository.findPlayerStatsByLeagueId(leagueId);
+    }
+
+    public List<PlayerStatPasseurDto>getStatPasseur(Long leagueId){
+
+        return playerStatRepository.findPlayerStatsPasseurByLeagueId(leagueId);
+    }
     @Value("${apisports.key}")
     private String apiSportsKey;
     public PlayerStatMatchDto getStatByJoueurId(Long id){
