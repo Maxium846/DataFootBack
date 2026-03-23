@@ -20,12 +20,6 @@ public class PlayerStatController {
         this.playerStatService = playerStatService;
     }
 
-    @GetMapping("/{id}")
-    public PlayerStatMatchDto getPlayerById(@PathVariable Long id){
-
-        return  playerStatService.getStatByJoueurId(id);
-    }
-
     @PostMapping("/match/{leagueId}")
     public void importStatMatchPlayer(@PathVariable Long leagueId) throws Exception {
 

@@ -12,10 +12,12 @@ import java.util.Optional;
 
 public interface PlayerStatRepository extends JpaRepository<PlayerStats, Long> {
 
-    PlayerStats findByPlayer_IdAndMatch_Id(Long joueurId, Long matchId);
+    Optional<PlayerStats> findByPlayer_IdAndMatch_Id(Long joueurId, Long matchId);
 
 
     Optional<PlayerStats> findByPlayer_Id(Long joueurId);
+
+
 
     @Query("""
 SELECT COUNT(ps)
@@ -38,15 +40,21 @@ WHERE ps.player.id = :playerId
         p.firstName,
         c.name,
         c.id,
-        COALESCE(SUM(ps.totalGoal), 0L)
+        c.logo,
+        COALESCE(SUM(ps.totalGoal), 0L),
+        COALESCE(SUM(ps.totalShoot), 0L),
+        COALESCE(SUM(ps.shootOnTarget), 0L)
+
     )
     FROM Player p
     JOIN p.club c
     LEFT JOIN p.playerStats ps
     WHERE c.league.id = :leagueId
-    GROUP BY p.id, p.firstName, c.name,c.id
-    HAVING COALESCE(SUM(ps.totalGoal), 0L) > 7
-    ORDER BY COALESCE(SUM(ps.totalGoal), 0L) DESC
+    GROUP BY p.id, p.firstName, c.name, c.id, c.logo
+    HAVING COALESCE(SUM(ps.totalGoal), 0L) >= 0
+    ORDER BY COALESCE(SUM(ps.totalGoal), 0L) DESC,
+             COALESCE(SUM(ps.totalShoot), 0L) DESC,
+             COALESCE(SUM(ps.shootOnTarget), 0L) DESC
 """)
     List<PlayerStatButeurDto> findPlayerStatsByLeagueId(@Param("leagueId") Long leagueId);
     @Query("""
@@ -55,13 +63,14 @@ WHERE ps.player.id = :playerId
         p.firstName,
         c.name,
         c.id,
+        c.logo,
         COALESCE(SUM(ps.assist), 0L)
     )
     FROM Player p
     JOIN p.club c
     LEFT JOIN p.playerStats ps
     WHERE c.league.id = :leagueId
-    GROUP BY p.id, p.firstName, c.name,c.id
+    GROUP BY p.id, p.firstName, c.name,c.id, c.logo
     HAVING COALESCE(SUM(ps.assist), 0L) > 3
     ORDER BY COALESCE(SUM(ps.assist), 0L) DESC
 """)

@@ -103,6 +103,7 @@ public class ClubService {
                 long apiTeamId = teamNode.get("id").asLong();
                 String name = teamNode.get("name").asText();
                 Integer fondation = teamNode.get("founded").asInt();
+                String logo = teamNode.get("logo").asText();
 
                 String coachName = null;
 
@@ -130,6 +131,7 @@ public class ClubService {
                 club.setLeague(league);
                 club.setDateFondation(fondation);
                 club.setEntraineur(coachName);
+                club.setLogo(logo);
 
                 Club saved = clubRepository.save(club);
 
@@ -138,7 +140,9 @@ public class ClubService {
                         saved.getName(),
                         saved.getLeague() != null ? saved.getLeague().getId() : null,
                         saved.getDateFondation(),
-                        saved.getEntraineur()
+                        saved.getEntraineur(),
+                        saved.getLogo()
+
                 ));
             }
 

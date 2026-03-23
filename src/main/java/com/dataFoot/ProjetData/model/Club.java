@@ -45,4 +45,6 @@ public class Club {
 
     @Column(unique = true)
     private Long apiFootballTeamId;
+    @Column(name = "logo")
+    private String logo;
 }

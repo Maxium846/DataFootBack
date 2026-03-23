@@ -12,14 +12,19 @@ public class PlayerStatPasseurDto {
     private String name;
     private String clubName;
     private Long clubId;
+    private String logo;
     private Long assist;
 
 
-    public PlayerStatPasseurDto(Long playerId, String name, String clubName, Long clubId,Long assist) {
+    public PlayerStatPasseurDto(Long playerId, String name, String clubName, Long clubId,String logo,Long assist) {
         this.playerId = playerId;
         this.name = name;
         this.clubName = clubName;
         this.clubId = clubId;
+        this.logo=logo;
         this.assist= assist;
+
     }
+
+
 }

@@ -67,7 +67,7 @@ public class MatchLineUpService {
     private MatchLineUpDto toDto(MatchLineUp lineup) {
         MatchLineUpDto dto = new MatchLineUpDto();
 
-        PlayerStats  notePlayer= playerStatRepository.findByPlayer_IdAndMatch_Id(lineup.getPlayer().getId(),lineup.getMatch().getId());
+        PlayerStats  notePlayer= playerStatRepository.findByPlayer_IdAndMatch_Id(lineup.getPlayer().getId(),lineup.getMatch().getId()).orElseThrow();
         dto.setNote(notePlayer.getNote());
         dto.setId(lineup.getId());
         dto.setPlayerId(lineup.getPlayer().getId());

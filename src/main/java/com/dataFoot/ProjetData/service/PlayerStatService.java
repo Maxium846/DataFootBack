@@ -34,6 +34,8 @@ public class PlayerStatService {
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final  ClubRepository clubRepository;
     private final ObjectMapper objectMapper;
+    @Value("${apisports.key}")
+    private String apiSportsKey;
 
     public PlayerStatService(PlayerStatRepository playerStatRepository, PlayersRepository playersRepository,  MatchRepository matchRepository, ClubRepository clubRepository, ObjectMapper objectMapper) {
         this.playerStatRepository = playerStatRepository;
@@ -53,18 +55,8 @@ public class PlayerStatService {
 
         return playerStatRepository.findPlayerStatsPasseurByLeagueId(leagueId);
     }
-    @Value("${apisports.key}")
-    private String apiSportsKey;
-    public PlayerStatMatchDto getStatByJoueurId(Long id){
-
-        Player player = playersRepository.findById(id).orElseThrow(()-> new RuntimeException("l'id du jouuer n'existe pas"));
-
-        PlayerStats playerStats = playerStatRepository.findByPlayer_Id(player.getId()).orElseThrow();
-
-        return PlayerStatMapper.toDto(playerStats);
 
 
-    }
 
     public void importStatPlayer(Long leagueId) throws Exception {
 
@@ -218,7 +210,7 @@ public class PlayerStatService {
 
 
 
-                    PlayerStats stat = playerStatRepository.findByPlayer_Id(player.getId()).orElseGet(PlayerStats :: new);
+                    PlayerStats stat = playerStatRepository.findByPlayer_IdAndMatch_Id(player.getId(),match.getId()).orElseGet(PlayerStats :: new);
                     stat.setClub(club);
                     stat.setMatch(match);
                     stat.setPlayer(player);

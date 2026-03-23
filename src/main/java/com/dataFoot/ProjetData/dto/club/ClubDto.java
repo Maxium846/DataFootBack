@@ -13,4 +13,5 @@ public class ClubDto {
     public String president;
     public String entraineur;
     private Integer dateFondation;
+    private String logo;
 }
