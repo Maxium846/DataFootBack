@@ -1,12 +1,11 @@
 package com.dataFoot.ProjetData.dto.player.playerStat;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class PlayerStatPasseurDto {
+public class PlayerStatPasseDto {
 
     private Long playerId;
     private String name;
@@ -14,15 +13,23 @@ public class PlayerStatPasseurDto {
     private Long clubId;
     private String logo;
     private Long assist;
+    private Long keyPasse;
+    private Long totalPasse;
+    private Long accuracyPass;
 
 
-    public PlayerStatPasseurDto(Long playerId, String name, String clubName, Long clubId,String logo,Long assist) {
+
+
+    public PlayerStatPasseDto(Long playerId, String name, String clubName, Long clubId, String logo, Long assist,Long keyPasse,Long totalPasse,Long accuracyPass) {
         this.playerId = playerId;
         this.name = name;
         this.clubName = clubName;
         this.clubId = clubId;
         this.logo=logo;
         this.assist= assist;
+        this.keyPasse=keyPasse;
+        this.totalPasse=totalPasse;
+        this.accuracyPass= accuracyPass;
 
     }
 

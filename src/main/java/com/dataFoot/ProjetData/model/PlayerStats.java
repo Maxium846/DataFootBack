@@ -51,7 +51,7 @@ public class PlayerStats {
 
     private int totalPasse;
     private int keyPasse;
-    private String accuracyPass;
+    private int accuracyPass;
 
     //tacle
 

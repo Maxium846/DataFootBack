@@ -1,9 +1,7 @@
 package com.dataFoot.ProjetData.service;
 
-import com.dataFoot.ProjetData.dto.player.playerStat.PlayerStatButeurDto;
-import com.dataFoot.ProjetData.dto.player.PlayerStatMatchDto;
-import com.dataFoot.ProjetData.dto.player.playerStat.PlayerStatPasseurDto;
-import com.dataFoot.ProjetData.mapper.PlayerStatMapper;
+import com.dataFoot.ProjetData.dto.player.playerStat.PlayerStatOffensiveDto;
+import com.dataFoot.ProjetData.dto.player.playerStat.PlayerStatPasseDto;
 import com.dataFoot.ProjetData.model.Club;
 import com.dataFoot.ProjetData.model.Match;
 import com.dataFoot.ProjetData.model.Player;
@@ -46,14 +44,14 @@ public class PlayerStatService {
     }
 
 
-    public List<PlayerStatButeurDto> getStat(Long leagueId) {
+    public List<PlayerStatOffensiveDto> getStat(Long leagueId) {
 
         return playerStatRepository.findPlayerStatsByLeagueId(leagueId);
     }
 
-    public List<PlayerStatPasseurDto>getStatPasseur(Long leagueId){
+    public List<PlayerStatPasseDto>getStatPasseur(Long leagueId){
 
-        return playerStatRepository.findPlayerStatsPasseurByLeagueId(leagueId);
+        return playerStatRepository.findPlayerStatsPasseByLeagueId(leagueId);
     }
 
 
@@ -162,6 +160,7 @@ public class PlayerStatService {
                     String accuracy = statNode.path("passes").path("accuracy").isNull()
                             ? null : statNode.path("passes").path("accuracy").asText();
 
+
                     // tackles
                     Integer totalTackles = statNode.path("tackles").path("total").isNull()
                             ? null : statNode.path("tackles").path("total").asInt();
@@ -234,7 +233,13 @@ public class PlayerStatService {
 
                     stat.setTotalPasse(totalPass != null ? totalPass : 0);
                     stat.setKeyPasse(key != null ? key : 0);
-                    stat.setAccuracyPass(accuracy);
+                    Integer accuracyInt = null;
+                    if(accuracy != null &&   !accuracy.isBlank()){
+                        accuracyInt= Integer.parseInt(accuracy);
+
+                    }
+                    stat.setAccuracyPass(accuracyInt);
+
 
                     stat.setTotalTackle(totalTackles != null ? totalTackles : 0);
                     stat.setBlocks(blocks != null ? blocks : 0);

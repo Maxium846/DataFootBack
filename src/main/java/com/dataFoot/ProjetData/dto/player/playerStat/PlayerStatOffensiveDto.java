@@ -1,12 +1,11 @@
 package com.dataFoot.ProjetData.dto.player.playerStat;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class PlayerStatButeurDto {
+public class PlayerStatOffensiveDto {
 
     private Long playerId;
     private String name;
@@ -18,7 +17,7 @@ public class PlayerStatButeurDto {
     private Long shootOnTarget;
 
 
-    public PlayerStatButeurDto(Long playerId, String name, String clubName, Long clubId,String logo,Long totalBut,Long totalShoot,Long shootOnTarget) {
+    public PlayerStatOffensiveDto(Long playerId, String name, String clubName, Long clubId, String logo, Long totalBut, Long totalShoot, Long shootOnTarget) {
         this.playerId = playerId;
         this.name = name;
         this.clubName = clubName;
