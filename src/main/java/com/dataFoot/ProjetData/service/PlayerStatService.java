@@ -13,12 +13,17 @@ import com.dataFoot.ProjetData.repository.PlayersRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -44,16 +49,17 @@ public class PlayerStatService {
     }
 
 
-    public List<PlayerStatOffensiveDto> getStat(Long leagueId) {
+    public Page<PlayerStatOffensiveDto> getStat(Long leagueId, int page, int size) {
 
-        return playerStatRepository.findPlayerStatsByLeagueId(leagueId);
+        Pageable pageable = PageRequest.of(page,size);
+        return playerStatRepository.findPlayerStatsByLeagueId(leagueId, pageable);
     }
 
-    public List<PlayerStatPasseDto>getStatPasseur(Long leagueId){
+    public Page<PlayerStatPasseDto>getStatPasseur(Long leagueId,int page , int size){
 
-        return playerStatRepository.findPlayerStatsPasseByLeagueId(leagueId);
+        Pageable pageable = PageRequest.of(page,size);
+        return playerStatRepository.findPlayerStatsPasseByLeagueId(leagueId,pageable);
     }
-
 
 
     public void importStatPlayer(Long leagueId) throws Exception {
@@ -297,6 +303,7 @@ public class PlayerStatService {
         JsonNode value = node.path(field);
         return !value.isMissingNode() && !value.isNull() && value.asBoolean();
     }
+
 }
 
 

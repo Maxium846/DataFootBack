@@ -10,10 +10,6 @@ import java.time.temporal.ChronoUnit;
 public class PlayerMapper {
 
 
-
-
-
-
     public static PlayerInClubDto toInClubDto(Player player) {
         PlayerInClubDto dto = new PlayerInClubDto();
         dto.setId(player.getId());
@@ -35,6 +31,43 @@ public class PlayerMapper {
             dto.setClubName(player.getClub().getName());
         }
         dto.setNation(player.getNation());
+        dto.setPhoto(player.getPhoto());
+        dto.setLeagueName(player.getClub().getLeague().getName());
+        return dto;
+    }
+
+    public static PlayerDto toDto(Player player) {
+        PlayerDto dto = new PlayerDto();
+        dto.setId(player.getId());
+        if(player.getClub() != null){
+            dto.setClubId(player.getClub().getId());
+
+        }
+
+        if (player.getDateDeNaissance() != null){
+            dto.setDateDeNaissance(player.getDateDeNaissance());
+        }
+        if (player.getPosition() != null) {
+
+            dto.setPosition(player.getPosition().name());
+
+        }
+        dto.setFirstName(player.getFirstName());
+        dto.setAge(player.getDateDeNaissance() != null
+                ? (int) player.getDateDeNaissance().until(LocalDate.now(), ChronoUnit.YEARS)
+                : 0); // ou null si ton champ peut être Integer
+        if (player.getClub() != null) {
+            dto.setClubName(player.getClub().getName());
+        }
+        dto.setNation(player.getNation());
+        dto.setPhoto(player.getPhoto());
+        if(player.getClub() != null){
+            dto.setLeagueName(player.getClub().getLeague().getName());
+        }
+        if(player.getClub() != null) {
+
+            dto.setLogo(player.getClub().getLogo());
+        }
         return dto;
     }
 
@@ -43,11 +76,8 @@ public class PlayerMapper {
 
         Player player = new Player();
         player.setId(dto.getId());
-        player.setLastName(dto.getLastName());
         player.setFirstName(dto.getFirstName());
         player.setDateDeNaissance(dto.getDateDeNaissance());
-        player.setPosition(dto.getPosition());
-
         return player;
     }
 }

@@ -17,4 +17,6 @@ public class PlayerInClubDto {
     @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate dateDeNaissance;
     private String nation;
+    private String photo;
+    private String leagueName;
 }

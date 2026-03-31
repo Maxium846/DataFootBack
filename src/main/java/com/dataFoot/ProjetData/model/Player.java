@@ -57,4 +57,7 @@ public class Player {
     private String taille;
     private String poids;
 
+    @Column(name = "photo")
+    private String photo;
+
 }

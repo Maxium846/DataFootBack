@@ -87,6 +87,7 @@ public class PlayerImportService {
                     String nation = player.getNation();
                     String taille = player.getTaille();
                     String poids = player.getPoids();
+                    String photo = player.getPhoto();
 
                     boolean needProfile =
                             birthDate == null ||
@@ -95,7 +96,11 @@ public class PlayerImportService {
                                     taille == null ||
                                     taille.isBlank() ||
                                     poids == null ||
-                                    poids.isBlank();
+                                    poids.isBlank()||
+                                    photo == null ||
+                                    photo.isBlank();
+
+
 
                     if (needProfile) {
                         String urlPlayer = BASE_URL + "/players/profiles?player=" + apiPlayerId;
@@ -116,6 +121,7 @@ public class PlayerImportService {
                                 nation = playerNodes.path("nationality").asText(null);
                                 taille = playerNodes.path("height").asText(null);
                                 poids = playerNodes.path("weight").asText(null);
+                                photo=playerNodes.path("photo").asText(null);
                             }
                         }
                     }
@@ -129,6 +135,7 @@ public class PlayerImportService {
                     player.setNation(nation);
                     player.setPoids(poids);
                     player.setTaille(taille);
+                    player.setPhoto(photo);
 
                     playerRepository.save(player);
                 }

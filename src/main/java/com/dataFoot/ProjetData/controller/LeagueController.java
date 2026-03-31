@@ -29,6 +29,11 @@ public class LeagueController {
         return leagueService.createLeague(leagueDto);
 
     }
+    @PostMapping("/{id}")
+    public  LeagueDto updateLeague(@PathVariable Long id ,@RequestBody LeagueDto leagueDto){
+
+        return leagueService.updateLeague(id,leagueDto);
+    }
     @GetMapping("/{id}")
     public LeagueByIdDto getLeagueById (@PathVariable Long id){
 

@@ -1,4 +1,5 @@
 package com.dataFoot.ProjetData.service;
+import com.dataFoot.ProjetData.dto.player.PlayerDto;
 import com.dataFoot.ProjetData.dto.player.PlayerInClubDto;
 import com.dataFoot.ProjetData.dto.player.PlayerStatDto;
 import com.dataFoot.ProjetData.enumeration.EventType;
@@ -39,6 +40,11 @@ public class PlayerService {
                 .stream()
                 .map(PlayerMapper::toInClubDto)
                 .toList();
+    }
+    public List<PlayerDto> allPlayerInAllLeague(){
+
+        return playerRepository.findAll().stream().map(PlayerMapper::toDto).toList();
+
     }
 
     public PlayerInClubDto getPlayerById(long id) {

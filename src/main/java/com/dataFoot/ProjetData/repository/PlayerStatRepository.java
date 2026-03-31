@@ -3,6 +3,8 @@ package com.dataFoot.ProjetData.repository;
 import com.dataFoot.ProjetData.dto.player.playerStat.PlayerStatOffensiveDto;
 import com.dataFoot.ProjetData.dto.player.playerStat.PlayerStatPasseDto;
 import com.dataFoot.ProjetData.model.PlayerStats;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -35,24 +37,27 @@ WHERE ps.player.id = :playerId
     int countByPlayerIdMinutesPlayed(@Param("playerId") int playerId);
 
     @Query("""
-    SELECT new com.dataFoot.ProjetData.dto.player.playerStat.PlayerStatOffensiveDto(
-        ps.player.id,
-        ps.player.firstName,
-        ps.club.name,
-        ps.club.id,
-        ps.club.logo,
-        COALESCE(SUM(ps.totalGoal), 0L),
-        COALESCE(SUM(ps.totalShoot), 0L),
-        COALESCE(SUM(ps.shootOnTarget), 0L)
-    )
-    FROM PlayerStats ps
-    WHERE ps.match.league.id = :leagueId
-    GROUP BY ps.player.id, ps.player.firstName, ps.club.name, ps.club.id, ps.club.logo
-    ORDER BY COALESCE(SUM(ps.totalGoal), 0L) DESC,
-             COALESCE(SUM(ps.totalShoot), 0L) DESC,
-             COALESCE(SUM(ps.shootOnTarget), 0L) DESC
-""")
-    List<PlayerStatOffensiveDto> findPlayerStatsByLeagueId(@Param("leagueId") Long leagueId);
+        SELECT new com.dataFoot.ProjetData.dto.player.playerStat.PlayerStatOffensiveDto(
+            ps.player.id,
+            ps.player.firstName,
+            ps.club.name,
+            ps.club.id,
+            ps.club.logo,
+            COALESCE(SUM(ps.totalGoal), 0L),
+            COALESCE(SUM(ps.totalShoot), 0L),
+            COALESCE(SUM(ps.shootOnTarget), 0L)
+        )
+        FROM PlayerStats ps
+        WHERE ps.match.league.id = :leagueId
+        GROUP BY ps.player.id, ps.player.firstName, ps.club.name, ps.club.id, ps.club.logo
+        ORDER BY COALESCE(SUM(ps.totalGoal), 0L) DESC,
+                 COALESCE(SUM(ps.totalShoot), 0L) DESC,
+                 COALESCE(SUM(ps.shootOnTarget), 0L) DESC
+    """)
+    Page<PlayerStatOffensiveDto> findPlayerStatsByLeagueId(
+            @Param("leagueId") Long leagueId,
+            Pageable pageable
+    );
     @Query("""
     SELECT new com.dataFoot.ProjetData.dto.player.playerStat.PlayerStatPasseDto(
         ps.player.id,
@@ -73,7 +78,7 @@ WHERE ps.player.id = :playerId
              COALESCE(SUM(ps.totalPasse), 0L) DESC,
              COALESCE(SUM(ps.accuracyPass), 0L)
 """)
-    List<PlayerStatPasseDto> findPlayerStatsPasseByLeagueId(@Param("leagueId") Long leagueId);
+    Page<PlayerStatPasseDto> findPlayerStatsPasseByLeagueId(@Param("leagueId") Long leagueId,Pageable pageable);
 
     @Query("""
        select coalesce(sum(ps.totalGoal), 0)

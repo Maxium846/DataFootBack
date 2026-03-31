@@ -37,6 +37,18 @@ public class LeagueService {
         return LeagueMapper.toDto(saved);
     }
 
+    public LeagueDto updateLeague(Long leagueId,LeagueDto leagueDto){
+        League league = leagueRepository.findById(leagueId).orElseThrow();
+        league.setId(leagueDto.getId());
+        league.setName(leagueDto.getName());
+        league.setApiFootballLeague(leagueDto.getApiFootballId());
+        league.setCountry(leagueDto.getCountry());
+        League saved = leagueRepository.save(league);
+
+        return LeagueMapper.toDto(saved);
+
+    }
+
     public LeagueByIdDto getLeagueById (Long id){
 
         League league = leagueRepository.findById(id).orElseThrow(() -> new  RuntimeException(" la ligue n'a pas été trouvé"));

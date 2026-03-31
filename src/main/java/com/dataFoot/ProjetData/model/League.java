@@ -22,7 +22,7 @@ public class League {
     @EqualsAndHashCode.Include
     private Long id;
 
-@Column(nullable = false)
+    @Column(nullable = false)
     private String name;
     private String country;
 

@@ -3,6 +3,7 @@ package com.dataFoot.ProjetData.controller;
 import com.dataFoot.ProjetData.dto.player.playerStat.PlayerStatOffensiveDto;
 import com.dataFoot.ProjetData.dto.player.playerStat.PlayerStatPasseDto;
 import com.dataFoot.ProjetData.service.PlayerStatService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,17 +25,20 @@ public class PlayerStatController {
 
          playerStatService.importStatPlayer(leagueId);
     }
-    @GetMapping("/stat/{leagueId}")
-    public ResponseEntity<List<PlayerStatOffensiveDto>> getStat(@PathVariable Long leagueId) {
-        List<PlayerStatOffensiveDto> playerStatButeurDto =playerStatService.getStat(leagueId);
-        return ResponseEntity.ok(playerStatButeurDto);
+    @GetMapping("/offensive/{leagueId}")
+    public Page<PlayerStatOffensiveDto> getStatsOffensive(
+            @PathVariable Long leagueId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        return playerStatService.getStat(leagueId, page, size);
     }
 
     @GetMapping("/stat/assist/{leagueId}")
-    public ResponseEntity<List<PlayerStatPasseDto>> getStatPasse(@PathVariable Long leagueId) {
+    public ResponseEntity<Page<PlayerStatPasseDto>> getStatPasse(@PathVariable Long leagueId,
+    @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
 
-
-        List<PlayerStatPasseDto> playerStatPasseur = playerStatService.getStatPasseur(leagueId);
+        Page<PlayerStatPasseDto> playerStatPasseur = playerStatService.getStatPasseur(leagueId,page,size);
         return ResponseEntity.ok(playerStatPasseur);
     }
 }
