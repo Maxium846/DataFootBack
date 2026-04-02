@@ -33,6 +33,11 @@ public class PlayerController {
         return playerService.getPlayerByClubByClassement();
     }
 
+    @GetMapping("/difficulte/{difficulty}")
+    public List<PlayerDto> getPlayerByDifficulty(@PathVariable String difficulty){
+
+        return playerService.getPlayerByDifficultyOpti(difficulty);
+    }
 
     @GetMapping("/{id}")
     public PlayerInClubDto getPlayerById(@PathVariable Long id){
@@ -50,6 +55,7 @@ public class PlayerController {
         PlayerStatDto events = playerService.getPlayerStats(playerId);
         return ResponseEntity.ok(events);
     }
+
 
     @GetMapping("/allPlayers")
     public  List<PlayerDto> getAllJoueur(){

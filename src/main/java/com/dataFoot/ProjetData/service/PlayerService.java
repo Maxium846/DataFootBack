@@ -12,6 +12,7 @@ import com.dataFoot.ProjetData.repository.*;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PlayerService {
@@ -71,7 +72,51 @@ public class PlayerService {
 
 
     }
-    public PlayerInClubDto getPlayerById(long id) {
+
+    // version non optimisé n + 1 query
+    public List<PlayerDto> getPlayerByFifficulty (String difficulte) {
+        List<League> leagues = leagueRepository.findAll();
+        List<Player> p1 = new ArrayList<>();
+
+        int limit = switch (difficulte){
+
+            case "Facile" -> 5;
+            case "Intermediaire" -> 10 ;
+            case "Difficile" -> 20 ;
+            default -> 0;
+        };
+
+        for(League league : leagues){
+            List<Classement> classements = classementRepository.findByLeagueIdWithClub(league.getId()).stream().limit(limit).toList();
+
+            for(Classement classement : classements){
+
+                List<Player> player = playerRepository.findByClubId(classement.getClub().getId()).stream().toList();
+                p1.addAll(player);
+            }
+
+        }
+         return p1.stream().map(PlayerMapper::toDto).toList();
+
+    }
+
+    // version optimisé avec query, permet d'eviter de faire plusisuers requetes
+    public List<PlayerDto> getPlayerByDifficultyOpti (String difficulte) {
+        int limit = switch (difficulte){
+
+            case "Facile" -> 5;
+            case "Intermediaire" -> 10 ;
+            case "Difficile" -> 20 ;
+            default -> 0;
+        };
+
+        List<Player> players = playerRepository.findTopPlayersPerLeague(limit);
+
+        return players.stream().map(PlayerMapper::toDto).toList();
+
+    }
+
+        public PlayerInClubDto getPlayerById(long id) {
 
         Player player = playerRepository.findById(id).orElseThrow(() -> new RuntimeException("l'id du joueur n'esiste pas "));
 
