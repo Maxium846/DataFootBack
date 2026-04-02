@@ -1,6 +1,7 @@
 package com.dataFoot.ProjetData.service;
 
 import com.dataFoot.ProjetData.dto.classement.ClassementDto;
+import com.dataFoot.ProjetData.dto.classement.ClassementDtoPageAccueil;
 import com.dataFoot.ProjetData.mapper.ClassementMapper;
 import com.dataFoot.ProjetData.model.Classement;
 import com.dataFoot.ProjetData.model.League;
@@ -42,7 +43,11 @@ public class ClassementService {
                     .toList();
         }
 
+        public List<ClassementDtoPageAccueil> pageAccueilClassement()
+        {
+            return  classementRepository.findAll().stream().map(ClassementMapper::toDtoPageAccueil).toList();
 
+        }
     @Transactional
     public void recalculateLeague(League league) {
 
