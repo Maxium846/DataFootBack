@@ -4,7 +4,9 @@ import com.dataFoot.ProjetData.dto.player.PlayerInClubDto;
 import com.dataFoot.ProjetData.dto.player.PlayerStatDto;
 import com.dataFoot.ProjetData.enumeration.EventType;
 import com.dataFoot.ProjetData.mapper.PlayerMapper;
+import com.dataFoot.ProjetData.model.Classement;
 import com.dataFoot.ProjetData.model.Club;
+import com.dataFoot.ProjetData.model.League;
 import com.dataFoot.ProjetData.model.Player;
 import com.dataFoot.ProjetData.repository.*;
 import org.springframework.stereotype.Service;
@@ -19,16 +21,18 @@ public class PlayerService {
 
     private final MatchEventRepository eventRepo;
 
-    private final MatchStatRepository matchStatRepository;
     private final PlayerStatRepository playerStatRepository;
+   private final  ClassementRepository classementRepository;
+   private final LeagueRepository leagueRepository;
 
-    public PlayerService(PlayersRepository playerRepository, ClubRepository clubRepository, MatchEventRepository eventRepo, MatchStatRepository matchStatRepository, PlayerStatRepository playerStatRepository) {
+    public PlayerService(PlayersRepository playerRepository, ClubRepository clubRepository, MatchEventRepository eventRepo, PlayerStatRepository playerStatRepository, ClassementRepository classementRepository, LeagueRepository leagueRepository) {
         this.playerRepository = playerRepository;
         this.clubRepository = clubRepository;
 
         this.eventRepo = eventRepo;
-        this.matchStatRepository = matchStatRepository;
         this.playerStatRepository = playerStatRepository;
+        this.classementRepository = classementRepository;
+        this.leagueRepository = leagueRepository;
     }
 
 
@@ -47,6 +51,26 @@ public class PlayerService {
 
     }
 
+    public List<PlayerDto> getPlayerByClubByClassement() {
+
+        List<League> league = leagueRepository.findAll();
+        List<Player> p1 = new ArrayList<>();
+
+        for(League l : league){
+            List<Classement> classement = classementRepository.findByLeagueIdWithClub(l.getId()).stream().limit(8).toList();
+
+            for (Classement c1 : classement) {
+                List<Player> players = playerRepository.findByClubId(c1.getClub().getId());
+                p1.addAll(players);
+            }
+        }
+
+
+        return p1.stream().map(PlayerMapper::toDto).toList();
+
+
+
+    }
     public PlayerInClubDto getPlayerById(long id) {
 
         Player player = playerRepository.findById(id).orElseThrow(() -> new RuntimeException("l'id du joueur n'esiste pas "));

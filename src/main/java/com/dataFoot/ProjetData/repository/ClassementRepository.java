@@ -26,6 +26,8 @@ public interface ClassementRepository extends JpaRepository<Classement,Long> {
     List<Classement> findByLeagueIdWithClub(@Param("leagueId") Long leagueId);
 
     Optional<Classement> findByLeagueAndClub(League league, Club club);
+
+    List<Club> findByClub(Club club);
     boolean existsByLeagueIdAndClubId(Long leagueId, Long clubId);
 
     @Transactional

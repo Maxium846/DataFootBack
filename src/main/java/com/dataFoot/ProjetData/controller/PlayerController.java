@@ -27,6 +27,12 @@ public class PlayerController {
     @GetMapping("/clubs/{id}")
     public List<PlayerInClubDto> getAllPlayerByClub(@PathVariable Long id){return playerService.allPlayer(id);}
 
+    @GetMapping("/guessFacile")
+    public List<PlayerDto> getPlayerByGuessFacile(){
+
+        return playerService.getPlayerByClubByClassement();
+    }
+
 
     @GetMapping("/{id}")
     public PlayerInClubDto getPlayerById(@PathVariable Long id){
