@@ -54,7 +54,7 @@ public class PlayerImportService {
         League league = leagueRepository.findById(leagueId)
                 .orElseThrow(() -> new RuntimeException("League not found"));
 
-        Integer apiFootballLeagueId = league.getApiFootballLeague(); // <-- à avoir dans League
+        Integer apiFootballLeagueId = league.getApiFootballLeague();
         if (apiFootballLeagueId == null) {
             throw new RuntimeException("League missing apiFootballLeagueId (ex: Premier League = 39)");
         }
@@ -151,7 +151,7 @@ public class PlayerImportService {
     private JsonNode callApiWithRetry(String url) throws Exception {
 
         int maxRetries = 8;
-        long baseWaitMs = 150;   // ✅ réduit (600ms c’est énorme)
+        long baseWaitMs = 150;
         long backoffMs = 1200;
 
         for (int attempt = 1; attempt <= maxRetries; attempt++) {

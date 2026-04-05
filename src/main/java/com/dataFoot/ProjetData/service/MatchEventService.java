@@ -32,7 +32,6 @@ public class MatchEventService {
         this.playerStatRepository = playerStatRepository;
     }
 
-    // 🔹 Récupérer tous les événements d'un match pour un joueur
 
 
 
@@ -44,9 +43,6 @@ public class MatchEventService {
                 .toList();
     }
 
-
-
-    // 🔹 Ajouter un événement
     public MatchEventDto saveEvent(MatchEventDto dto) {
         Match match = matchRepository.findById(dto.getMatchId()).orElseThrow();
         Club club = clubRepository.findById(dto.getClubId()).orElseThrow();
@@ -70,7 +66,6 @@ public class MatchEventService {
     }
 
 
-    // 🔹 Mapper entité → DTO
     private MatchEventDto toDto(MatchEvent event) {
 
         MatchEventDto dto = new MatchEventDto();

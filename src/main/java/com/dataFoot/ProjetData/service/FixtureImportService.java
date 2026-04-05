@@ -111,12 +111,10 @@ public class FixtureImportService {
 
             Integer journee = parseRoundToJournee(leagueNode.path("round").asText(null));
             if (journee == null) {
-                // ton modèle interdit NULL -> on skip ou on force 0
                 skipped++;
                 continue;
             }
 
-            // Score (peut être null si pas joué)
             Integer homeGoals = goals.path("home").isNull() ? null : goals.path("home").asInt();
             Integer awayGoals = goals.path("away").isNull() ? null : goals.path("away").asInt();
 
@@ -141,7 +139,6 @@ public class FixtureImportService {
             created++;
         }
 
-        // Recalcul classement depuis tes matchs en base
         classementService.recalculateLeague(league);
 
         return created + " matchs importés, " + skipped + " ignorés, classement recalculé.";

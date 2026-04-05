@@ -21,17 +21,15 @@ public class MatchLineUpService {
 
     private final LeagueRepository leagueRepository;
 
-    private final PlayerStatRepository playerStatRepository;
     public MatchLineUpService(MatchLineUpRepository lineupRepo,
                               MatchRepository matchRepo,
                               PlayersRepository playerRepo,
-                              ClubRepository clubRepo, LeagueRepository leagueRepository, PlayerStatRepository playerStatRepository) {
+                              ClubRepository clubRepo, LeagueRepository leagueRepository) {
         this.lineupRepo = lineupRepo;
         this.matchRepo = matchRepo;
         this.playerRepo = playerRepo;
         this.clubRepo = clubRepo;
         this.leagueRepository = leagueRepository;
-        this.playerStatRepository = playerStatRepository;
     }
 
     // 🔹 Récupérer la composition d'un match

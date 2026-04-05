@@ -147,7 +147,6 @@ public class MatchDetailsImportService {
             JsonNode response = callApiWithRetry(url).path("response");
             if (!response.isArray()) return 0;
 
-            // 1) Récupére tout les id des joueurs mentionnés dans l'event.
             Set<Integer> apiPlayerIds = new HashSet<>();
             for (JsonNode e : response) {
                 Integer p = e.path("player").path("id").isMissingNode() ? null : e.path("player").path("id").asInt();
@@ -156,7 +155,6 @@ public class MatchDetailsImportService {
                 if (a != null) apiPlayerIds.add(a);
             }
 
-            // 2) Charger tout les joueurs en une seul requete et creer une Map
             Map<Integer, Player> playerByApiId = playerRepository.findByApiFootballPlayerIdIn(apiPlayerIds).stream()
                     .collect(Collectors.toMap(Player::getApiFootballPlayerId, p -> p));
 
@@ -196,11 +194,9 @@ public class MatchDetailsImportService {
                 me.setEventType(eventType);
 
                 if (eventType == EventType.SUBSTITUTION) {
-                    // substitution: player = out, assist = in
                     me.setPlayerOut(mainPlayer);
                     me.setPlayerIn(assistPlayer);
 
-                    // fallback noms (si ids null/non trouvés)
                     me.setPlayerOutName(playerName);
                     me.setPlayerInName(assistName);
 
@@ -209,7 +205,6 @@ public class MatchDetailsImportService {
                     me.setAssistName(null);
 
                 } else {
-                    // autres events => joueur principal requis
                     if (mainPlayer == null) continue;
 
                     me.setPlayer(mainPlayer);
@@ -321,7 +316,6 @@ public class MatchDetailsImportService {
 
                 Player savedPlayer = playerRepository.save(player);
 
-                // très important
                 playerByApiId.put(savedPlayer.getApiFootballPlayerId(), savedPlayer);
             }
 
