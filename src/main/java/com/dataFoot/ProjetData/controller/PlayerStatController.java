@@ -26,19 +26,18 @@ public class PlayerStatController {
          playerStatService.importStatPlayer(leagueId);
     }
     @GetMapping("/offensive/{leagueId}")
-    public Page<PlayerStatOffensiveDto> getStatsOffensive(
-            @PathVariable Long leagueId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
+    public List<PlayerStatOffensiveDto> getStatsOffensive(
+            @PathVariable Long leagueId
+
     ) {
-        return playerStatService.getStat(leagueId, page, size);
+        return playerStatService.getStat(leagueId);
     }
 
     @GetMapping("/stat/assist/{leagueId}")
-    public ResponseEntity<Page<PlayerStatPasseDto>> getStatPasse(@PathVariable Long leagueId,
-    @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
+    public List<PlayerStatPasseDto>getStatPasse(@PathVariable Long leagueId
+    ) {
 
-        Page<PlayerStatPasseDto> playerStatPasseur = playerStatService.getStatPasseur(leagueId,page,size);
-        return ResponseEntity.ok(playerStatPasseur);
+        return playerStatService.getStatPasseur(leagueId);
+
     }
 }

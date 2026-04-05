@@ -1,5 +1,4 @@
 package com.dataFoot.ProjetData.service;
-
 import com.dataFoot.ProjetData.dto.player.playerStat.PlayerStatOffensiveDto;
 import com.dataFoot.ProjetData.dto.player.playerStat.PlayerStatPasseDto;
 import com.dataFoot.ProjetData.model.Club;
@@ -13,17 +12,11 @@ import com.dataFoot.ProjetData.repository.PlayersRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -49,16 +42,14 @@ public class PlayerStatService {
     }
 
 
-    public Page<PlayerStatOffensiveDto> getStat(Long leagueId, int page, int size) {
+    public List<PlayerStatOffensiveDto> getStat(Long leagueId) {
 
-        Pageable pageable = PageRequest.of(page,size);
-        return playerStatRepository.findPlayerStatsByLeagueId(leagueId, pageable);
+        return playerStatRepository.findTop30PlayerStatsByLeagueId(leagueId);
     }
 
-    public Page<PlayerStatPasseDto>getStatPasseur(Long leagueId,int page , int size){
+    public List<PlayerStatPasseDto>getStatPasseur(Long leagueId){
 
-        Pageable pageable = PageRequest.of(page,size);
-        return playerStatRepository.findPlayerStatsPasseByLeagueId(leagueId,pageable);
+        return playerStatRepository.findPlayerStatsPasseByLeagueId(leagueId);
     }
 
 
@@ -287,21 +278,6 @@ public class PlayerStatService {
         HttpResponse<String> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
         if (resp.statusCode() >= 400) throw new RuntimeException("API error " + resp.statusCode());
         return objectMapper.readTree(resp.body());
-    }
-
-    private Integer getInteger(JsonNode node, String field) {
-        JsonNode value = node.path(field);
-        return value.isMissingNode() || value.isNull() ? null : value.asInt();
-    }
-
-    private String getString(JsonNode node, String field) {
-        JsonNode value = node.path(field);
-        return value.isMissingNode() || value.isNull() ? null : value.asText();
-    }
-
-    private boolean getBoolean(JsonNode node, String field) {
-        JsonNode value = node.path(field);
-        return !value.isMissingNode() && !value.isNull() && value.asBoolean();
     }
 
 }

@@ -37,27 +37,24 @@ WHERE ps.player.id = :playerId
     int countByPlayerIdMinutesPlayed(@Param("playerId") int playerId);
 
     @Query("""
-        SELECT new com.dataFoot.ProjetData.dto.player.playerStat.PlayerStatOffensiveDto(
-            ps.player.id,
-            ps.player.firstName,
-            ps.club.name,
-            ps.club.id,
-            ps.club.logo,
-            COALESCE(SUM(ps.totalGoal), 0L),
-            COALESCE(SUM(ps.totalShoot), 0L),
-            COALESCE(SUM(ps.shootOnTarget), 0L)
-        )
-        FROM PlayerStats ps
-        WHERE ps.match.league.id = :leagueId
-        GROUP BY ps.player.id, ps.player.firstName, ps.club.name, ps.club.id, ps.club.logo
-        ORDER BY COALESCE(SUM(ps.totalGoal), 0L) DESC,
-                 COALESCE(SUM(ps.totalShoot), 0L) DESC,
-                 COALESCE(SUM(ps.shootOnTarget), 0L) DESC
-    """)
-    Page<PlayerStatOffensiveDto> findPlayerStatsByLeagueId(
-            @Param("leagueId") Long leagueId,
-            Pageable pageable
-    );
+    SELECT new com.dataFoot.ProjetData.dto.player.playerStat.PlayerStatOffensiveDto(
+        ps.player.id,
+        ps.player.firstName,
+        ps.club.name,
+        ps.club.id,
+        ps.club.logo,
+        COALESCE(SUM(ps.totalGoal), 0L),
+        COALESCE(SUM(ps.totalShoot), 0L),
+        COALESCE(SUM(ps.shootOnTarget), 0L)
+    )
+    FROM PlayerStats ps
+    WHERE ps.match.league.id = :leagueId
+    GROUP BY ps.player.id, ps.player.firstName, ps.club.name, ps.club.id, ps.club.logo
+    ORDER BY COALESCE(SUM(ps.totalGoal), 0L) DESC,
+             COALESCE(SUM(ps.totalShoot), 0L) DESC,
+             COALESCE(SUM(ps.shootOnTarget), 0L) DESC
+""")
+    List<PlayerStatOffensiveDto> findTop30PlayerStatsByLeagueId(@Param("leagueId") Long leagueId);
     @Query("""
     SELECT new com.dataFoot.ProjetData.dto.player.playerStat.PlayerStatPasseDto(
         ps.player.id,
@@ -78,7 +75,7 @@ WHERE ps.player.id = :playerId
              COALESCE(SUM(ps.totalPasse), 0L) DESC,
              COALESCE(SUM(ps.accuracyPass), 0L)
 """)
-    Page<PlayerStatPasseDto> findPlayerStatsPasseByLeagueId(@Param("leagueId") Long leagueId,Pageable pageable);
+    List<PlayerStatPasseDto> findPlayerStatsPasseByLeagueId(@Param("leagueId") Long leagueId);
 
     @Query("""
        select coalesce(sum(ps.totalGoal), 0)

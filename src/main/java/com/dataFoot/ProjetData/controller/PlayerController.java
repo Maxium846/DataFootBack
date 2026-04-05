@@ -15,7 +15,6 @@ import java.util.List;
 @RequestMapping("/api/players")
 public class PlayerController {
 
-
     private final PlayerService playerService;
     private final PlayerImportService playerImportService;
 
@@ -23,7 +22,6 @@ public class PlayerController {
         this.playerService = playerService;
         this.playerImportService = playerImportService;
     }
-
     @GetMapping("/clubs/{id}")
     public List<PlayerInClubDto> getAllPlayerByClub(@PathVariable Long id){return playerService.allPlayer(id);}
 
@@ -32,9 +30,8 @@ public class PlayerController {
 
         return playerService.getPlayerByClubByClassement();
     }
-
     @GetMapping("/difficulte/{difficulty}")
-    public List<PlayerDto> getPlayerByDifficulty(@PathVariable String difficulty){
+    public List<PlayerDto> getListPlayerForFiltre(@PathVariable String difficulty){
 
         return playerService.getPlayerByDifficultyOpti(difficulty);
     }
@@ -62,10 +59,6 @@ public class PlayerController {
 
         return playerService.allPlayerInAllLeague();
     }
-
-
-
-
 
 }
 

@@ -23,8 +23,8 @@ public class PlayerService {
     private final MatchEventRepository eventRepo;
 
     private final PlayerStatRepository playerStatRepository;
-   private final  ClassementRepository classementRepository;
-   private final LeagueRepository leagueRepository;
+    private final  ClassementRepository classementRepository;
+    private final LeagueRepository leagueRepository;
 
     public PlayerService(PlayersRepository playerRepository, ClubRepository clubRepository, MatchEventRepository eventRepo, PlayerStatRepository playerStatRepository, ClassementRepository classementRepository, LeagueRepository leagueRepository) {
         this.playerRepository = playerRepository;
@@ -96,7 +96,7 @@ public class PlayerService {
             }
 
         }
-         return p1.stream().map(PlayerMapper::toDto).toList();
+        return p1.stream().map(PlayerMapper::toDto).toList();
 
     }
 
@@ -154,10 +154,4 @@ public class PlayerService {
 
         return stats;
     }
-
-
-
-
-
-
 }
