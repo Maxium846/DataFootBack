@@ -1,10 +1,9 @@
 package com.dataFoot.ProjetData.controller;
 
+import com.dataFoot.ProjetData.dto.player.playerStat.PlayerStatImpactDto;
 import com.dataFoot.ProjetData.dto.player.playerStat.PlayerStatOffensiveDto;
 import com.dataFoot.ProjetData.dto.player.playerStat.PlayerStatPasseDto;
 import com.dataFoot.ProjetData.service.PlayerStatService;
-import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,6 +37,10 @@ public class PlayerStatController {
     ) {
 
         return playerStatService.getStatPasseur(leagueId);
+    }
+    @GetMapping("/stats/impact/{leagueId}")
+    public List<PlayerStatImpactDto> getStatInpact (@PathVariable Long leagueId){
 
+        return playerStatService.getStatsInpact(leagueId);
     }
 }

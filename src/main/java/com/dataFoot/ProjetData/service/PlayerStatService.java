@@ -1,4 +1,5 @@
 package com.dataFoot.ProjetData.service;
+import com.dataFoot.ProjetData.dto.player.playerStat.PlayerStatImpactDto;
 import com.dataFoot.ProjetData.dto.player.playerStat.PlayerStatOffensiveDto;
 import com.dataFoot.ProjetData.dto.player.playerStat.PlayerStatPasseDto;
 import com.dataFoot.ProjetData.model.Club;
@@ -30,10 +31,12 @@ public class PlayerStatService {
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final  ClubRepository clubRepository;
     private final ObjectMapper objectMapper;
-    @Value("${apisports.key}")
-    private String apiSportsKey;
 
-    public PlayerStatService(PlayerStatRepository playerStatRepository, PlayersRepository playersRepository,  MatchRepository matchRepository, ClubRepository clubRepository, ObjectMapper objectMapper) {
+
+    @Value("${apisports.key}")
+    private  String apiSportsKey;
+
+    public PlayerStatService(PlayerStatRepository playerStatRepository, PlayersRepository playersRepository, MatchRepository matchRepository, ClubRepository clubRepository, ObjectMapper objectMapper) {
         this.playerStatRepository = playerStatRepository;
         this.matchRepository = matchRepository;
         this.playersRepository = playersRepository;
@@ -52,6 +55,10 @@ public class PlayerStatService {
         return playerStatRepository.findPlayerStatsPasseByLeagueId(leagueId);
     }
 
+    public List<PlayerStatImpactDto> getStatsInpact (Long leagueId){
+
+        return playerStatRepository.findPlayerStatsImpactByLeagueId(leagueId);
+    }
 
     public void importStatPlayer(Long leagueId) throws Exception {
 

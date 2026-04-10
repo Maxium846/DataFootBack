@@ -8,10 +8,7 @@ public enum EventType {
 
     YELLOW_CARD,
     RED_CARD,
-
-    ASSIST,
     VAR,
     SUBSTITUTION,
-
     OTHER
 }
