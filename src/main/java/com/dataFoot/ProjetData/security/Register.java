@@ -1,8 +1,5 @@
 package com.dataFoot.ProjetData.security;
 
-import com.dataFoot.ProjetData.model.User;
-import com.dataFoot.ProjetData.repository.UserRepository;
-import com.dataFoot.ProjetData.service.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
