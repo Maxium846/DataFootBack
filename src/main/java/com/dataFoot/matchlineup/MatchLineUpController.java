@@ -1,0 +1,35 @@
+package com.dataFoot.matchlineup;
+
+import com.dataFoot.matchlineup.dto.MatchLineUpDto;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/matches")
+public class MatchLineUpController {
+
+    private final MatchLineUpService lineupService;
+
+    public MatchLineUpController(MatchLineUpService lineupService) {
+        this.lineupService = lineupService;
+    }
+
+    // 🔹 Récupérer la composition d'un match
+    @GetMapping("/match/{matchId}")
+    public ResponseEntity<List<MatchLineUpDto>> getLineUpByMatch(@PathVariable Long matchId) {
+        List<MatchLineUpDto> lineups = lineupService.getLineUpByMatch(matchId);
+        return ResponseEntity.ok(lineups);
+    }
+
+    // 🔹 Ajouter un joueur dans la composition d'un match
+    @PostMapping("/{matchId}/lineup/{leagueId}")    public ResponseEntity<List<MatchLineUpDto>> addLineups(
+            @PathVariable Long matchId,
+            @RequestBody List<MatchLineUpDto> lineups,
+            @PathVariable Long leagueId) {
+
+        List<MatchLineUpDto> saved = lineupService.saveLineups(matchId, lineups,leagueId);
+        return ResponseEntity.ok(saved);
+    }
+}
