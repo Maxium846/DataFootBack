@@ -11,7 +11,7 @@ import com.dataFoot.playerstat.PlayerStatRepository;
 import com.dataFoot.ranking.Ranking;
 import com.dataFoot.ranking.RankingRepository;
 import com.dataFoot.team.TeamRepository;
-import com.dataFoot.team.Teams;
+import com.dataFoot.team.Team;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -41,9 +41,9 @@ public class PlayerService {
 
     public List<PlayerInClubDto> allPlayer(Long clubId) {
 
-        Optional<Teams> club = teamRepository.findById(clubId);
+        Optional<Team> club = teamRepository.findById(clubId);
 
-        return playerRepository.findByTeamsId(club.orElseThrow().getId())
+        return playerRepository.findByTeamId(club.orElseThrow().getId())
                 .stream()
                 .map(PlayerMapper::toInClubDto)
                 .toList();
@@ -63,7 +63,7 @@ public class PlayerService {
             List<Ranking> ranking = rankingRepository.findByLeagueIdWithClub(l.getId()).stream().limit(8).toList();
 
             for (Ranking c1 : ranking) {
-                List<Player> players = playerRepository.findByTeamsId(c1.getTeams().getId());
+                List<Player> players = playerRepository.findByTeamId(c1.getTeam().getId());
                 p1.addAll(players);
             }
         }
@@ -93,7 +93,7 @@ public class PlayerService {
 
             for(Ranking ranking : rankings){
 
-                List<Player> player = playerRepository.findByTeamsId(ranking.getTeams().getId()).stream().toList();
+                List<Player> player = playerRepository.findByTeamId(ranking.getTeam().getId()).stream().toList();
                 p1.addAll(player);
             }
 
@@ -139,8 +139,8 @@ public class PlayerService {
                 List.of(EventType.GOAL));
         int total = eventRepo.findByPlayerId(playerId).size();
 
-        int matchesPlayed = playerStatRepository.countByPlayerIdMatchPlayed(playerId);
-        int minutePlayed = playerStatRepository.countByPlayerIdMinutesPlayed(playerId);
+        int matchesPlayed = playerStatRepository.countByPlayersIdMatchPlayed(playerId);
+        int minutePlayed = playerStatRepository.countByPlayersIdMinutesPlayed(playerId);
 
 
         PlayerStatDto stats = new PlayerStatDto();

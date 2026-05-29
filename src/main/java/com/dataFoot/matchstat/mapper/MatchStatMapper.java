@@ -12,7 +12,7 @@ public class MatchStatMapper {
 
         matchstatDto.setId(matchStat.getId());
         matchstatDto.setBlockedShots(matchStat.getBlockedShots());
-        matchstatDto.setTeamId(matchStat.getTeamsId().getId());
+        matchstatDto.setTeamId(matchStat.getTeamId().getId());
         matchstatDto.setMatch(matchStat.getMatch().getId());
         matchstatDto.setFouls(matchStat.getFouls());
         matchstatDto.setBallPossession(matchStat.getBallPossession());
@@ -32,7 +32,7 @@ public class MatchStatMapper {
         matchstatDto.setGoalsPrevented(matchStat.getGoalsPrevented());
         matchstatDto.setTotalShots(matchStat.getTotalShots());
         matchstatDto.setGoalkeeperSave(matchStat.getGoalkeeperSave());
-        matchstatDto.setNameClub(matchStat.getTeamsId().getName());
+        matchstatDto.setNameClub(matchStat.getTeamId().getName());
 
         return matchstatDto;
     }

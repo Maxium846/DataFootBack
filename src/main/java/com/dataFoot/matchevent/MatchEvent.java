@@ -2,7 +2,7 @@ package com.dataFoot.matchevent;
 import com.dataFoot.enumeration.EventType;
 import com.dataFoot.match.Match;
 import com.dataFoot.player.Player;
-import com.dataFoot.team.Teams;
+import com.dataFoot.team.Team;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -41,7 +41,7 @@ public class MatchEvent {
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id", nullable = false)
-    private Teams teams;
+    private Team team;
 
     @Column(nullable = false)
     private int minute;

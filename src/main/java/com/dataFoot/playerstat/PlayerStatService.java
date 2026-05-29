@@ -2,7 +2,7 @@ package com.dataFoot.playerstat;
 import com.dataFoot.playerstat.playerstatdto.PlayerStatImpactDto;
 import com.dataFoot.playerstat.playerstatdto.PlayerStatOffensiveDto;
 import com.dataFoot.playerstat.playerstatdto.PlayerStatPasseDto;
-import com.dataFoot.team.Teams;
+import com.dataFoot.team.Team;
 import com.dataFoot.match.Match;
 import com.dataFoot.player.Player;
 import com.dataFoot.team.TeamRepository;
@@ -64,7 +64,7 @@ public class PlayerStatService {
 
         List<Match> matches = matchRepository.findByLeagueId(leagueId);
 
-        List<Teams> t = teamRepository.findByLeagueId(leagueId);
+        List<Team> t = teamRepository.findByLeagueId(leagueId);
         for (Match match : matches) {
 
             int fixtureId = match.getApiFootballFixtureId();
@@ -85,12 +85,12 @@ public class PlayerStatService {
                     continue;
                 }
 
-                Teams teams = t.stream()
+                Team team = t.stream()
                         .filter(c -> Objects.equals(c.getApiFootballTeamId(), apiTeamId))
                         .findFirst()
                         .orElse(null);
 
-                if (teams == null) {
+                if (team == null) {
                     System.out.println("Club introuvable pour apiTeamId = " + apiTeamId);
                     continue;
                 }
@@ -213,12 +213,12 @@ public class PlayerStatService {
 
 
 
-                    PlayerStats stat = playerStatRepository.findByPlayer_IdAndMatch_Id(player.getId(),match.getId()).orElseGet(PlayerStats :: new);
-                    stat.setTeams(teams);
+                    PlayerStats stat = playerStatRepository.findByPlayers_IdAndMatch_Id(player.getId(),match.getId()).orElseGet(PlayerStats :: new);
+                    stat.setTeam(team);
                     stat.setMatch(match);
-                    stat.setPlayer(player);
-                    assert teams != null;
-                    stat.setNameClub(teams.getName());
+                    stat.setPlayers(player);
+                    assert team != null;
+                    stat.setNameClub(team.getName());
                     stat.setNameJoueur(apiPlayerName);
                     stat.setMinutePlayed(apiMinutePlayed != null ? apiMinutePlayed : 0);
                     stat.setNote(apiRating);

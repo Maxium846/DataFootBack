@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface PlayersRepository extends JpaRepository<Player,Long> {
 
 
-    List<Player> findByTeamsId(Long clubId);
+    List<Player> findByTeamId(Long clubId);
 
     Optional<Player> findByApiFootballPlayerId(long apiFootballPlayerId);
 
@@ -19,20 +19,10 @@ public interface PlayersRepository extends JpaRepository<Player,Long> {
     List<Player> findByApiFootballPlayerIdIn(Collection<Integer> ids);
 
 
-
-    @Query("""
-       SELECT p
-       FROM Player p
-       JOIN p.teams c
-       WHERE c.league.id = :leagueId
-       AND c.id = :clubId
-       """)
-    List<Player> findByLeagueAndClubId(Long leagueId, Long clubId);
-
     @Query(value = """
     SELECT p.*
-    FROM player p
-    JOIN teams t ON p.team_id = t.id
+    FROM players p
+    JOIN team t ON p.team_id = t.id
     JOIN (
         SELECT r.*,\s
                ROW_NUMBER() OVER (PARTITION BY r.league_id ORDER BY r.points DESC) as rn

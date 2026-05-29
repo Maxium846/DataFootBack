@@ -1,7 +1,7 @@
 package com.dataFoot.matchstat;
 
 import com.dataFoot.match.Match;
-import com.dataFoot.team.Teams;
+import com.dataFoot.team.Team;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -44,7 +44,7 @@ public class MatchStat {
     private Match match;
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "team_id")
-    private Teams teamsId;
+    private Team teamId;
 
 
 

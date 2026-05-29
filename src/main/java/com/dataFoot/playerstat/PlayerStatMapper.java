@@ -10,9 +10,9 @@ public class PlayerStatMapper {
 
         dto.setId(stats.getId());
 
-        dto.setPlayerId(stats.getPlayer().getId());
+        dto.setPlayerId(stats.getPlayers().getId());
         dto.setMatchId(stats.getMatch().getId());
-        dto.setClub(stats.getTeams().getId());
+        dto.setClub(stats.getTeam().getId());
 
         dto.setMinutePlayed(stats.getMinutePlayed());
         dto.setNote(stats.getNote());

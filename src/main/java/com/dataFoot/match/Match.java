@@ -2,7 +2,7 @@ package com.dataFoot.match;
 
 import com.dataFoot.league.League;
 import com.dataFoot.matchlineup.MatchLineUp;
-import com.dataFoot.team.Teams;
+import com.dataFoot.team.Team;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,11 +29,11 @@ public class Match {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "home_club_id", nullable = false)
-    private Teams homeTeams;
+    private Team homeTeam;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "away_club_id", nullable = false)
-    private Teams awayTeams;
+    private Team awayTeam;
     private Integer homeGoals;
     private Integer awayGoals;
     private boolean played;

@@ -11,8 +11,8 @@ import com.dataFoot.matchlineup.MatchLineUp;
 import com.dataFoot.matchlineup.MatchLineUpRepository;
 import com.dataFoot.player.Player;
 import com.dataFoot.player.PlayersRepository;
+import com.dataFoot.team.Team;
 import com.dataFoot.team.TeamRepository;
-import com.dataFoot.team.Teams;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
@@ -77,9 +77,9 @@ public class MatchDetailsImportService {
         List<Match> matches = matchRepository.findByLeagueId(leagueId);
 
         // Cache clubs (1 seule requête)
-        Map<Long, Teams> clubByApiTeamId = teamRepository.findByLeagueId(leagueId).stream()
+        Map<Long, Team> clubByApiTeamId = teamRepository.findByLeagueId(leagueId).stream()
                 .filter(c -> c.getApiFootballTeamId() != null)
-                .collect(Collectors.toMap(Teams::getApiFootballTeamId, c -> c));
+                .collect(Collectors.toMap(Team::getApiFootballTeamId, c -> c));
         // rresultat requete  : { 33 -> Arsenal ,
         //                        34-> Manchester}
 
@@ -149,7 +149,7 @@ public class MatchDetailsImportService {
 
     private int importEventsForMatchOptimized(Match match,
                                               int fixtureId,
-                                              Map<Long, Teams> clubByApiTeamId) {
+                                              Map<Long, Team> clubByApiTeamId) {
         try {
             String url = BASE_URL + "/fixtures/events?fixture=" + fixtureId;
             JsonNode response = callApiWithRetry(url).path("response");
@@ -173,8 +173,8 @@ public class MatchDetailsImportService {
                 Long apiTeamId = e.path("team").path("id").isMissingNode() ? null : e.path("team").path("id").asLong();
                 if (apiTeamId == null) continue;
 
-                Teams teams = clubByApiTeamId.get(apiTeamId);
-                if (teams == null) continue;
+                Team team = clubByApiTeamId.get(apiTeamId);
+                if (team == null) continue;
 
                 int minute = e.path("time").path("elapsed").asInt(0);
                 Integer extra = e.path("time").path("extra").isNull() ? null : e.path("time").path("extra").asInt();
@@ -197,7 +197,7 @@ public class MatchDetailsImportService {
 
                 MatchEvent me = new MatchEvent();
                 me.setMatch(match);
-                me.setTeams(teams);
+                me.setTeam(team);
                 me.setMinute(minute);
                 me.setEventType(eventType);
 
@@ -248,7 +248,7 @@ public class MatchDetailsImportService {
     private int importLineupsForMatchUpsertOptimized(Match match,
                                                      int fixtureId,
                                                      Long leagueId,
-                                                     Map<Long, Teams> clubByApiTeamId) {
+                                                     Map<Long, Team> clubByApiTeamId) {
         try {
             String url = BASE_URL + "/fixtures/lineups?fixture=" + fixtureId;
             JsonNode response = callApiWithRetry(url).path("response");
@@ -256,7 +256,7 @@ public class MatchDetailsImportService {
 
             // preload existing lineups in 1 query (évite N requêtes)
             Map<Long, MatchLineUp> existingByPlayerId = matchLineUpRepository.findByMatchId(match.getId()).stream()
-                    .collect(Collectors.toMap(lu -> lu.getPlayer().getId(), lu -> lu));
+                    .collect(Collectors.toMap(lu -> lu.getPlayers().getId(), lu -> lu));
 
 
             // collect api ids
@@ -337,20 +337,20 @@ public class MatchDetailsImportService {
                 Long apiTeamId = teamLineup.path("team").path("id").isMissingNode() ? null : teamLineup.path("team").path("id").asLong();
                 if (apiTeamId == null) continue;
 
-                Teams teams = clubByApiTeamId.get(apiTeamId);
-                if (teams == null) continue;
+                Team team = clubByApiTeamId.get(apiTeamId);
+                if (team == null) continue;
 
                 JsonNode startXI = teamLineup.path("startXI");
                 if (startXI.isArray()) {
                     for (JsonNode p : startXI) {
-                        upsertLineupFast(match, teams, p.path("player"), true, playerByApiId, existingByPlayerId, seenPlayerIds, toSave);
+                        upsertLineupFast(match, team, p.path("player"), true, playerByApiId, existingByPlayerId, seenPlayerIds, toSave);
                     }
                 }
 
                 JsonNode subs = teamLineup.path("substitutes");
                 if (subs.isArray()) {
                     for (JsonNode p : subs) {
-                        upsertLineupFast(match, teams, p.path("player"), false, playerByApiId, existingByPlayerId, seenPlayerIds, toSave);
+                        upsertLineupFast(match, team, p.path("player"), false, playerByApiId, existingByPlayerId, seenPlayerIds, toSave);
                     }
                 }
             }
@@ -360,7 +360,7 @@ public class MatchDetailsImportService {
 
             // delete absent players
             if (!seenPlayerIds.isEmpty()) {
-                matchLineUpRepository.deleteByMatchIdAndPlayerIdNotIn(match.getId(), seenPlayerIds);
+                matchLineUpRepository.deleteByMatchIdAndPlayersIdNotIn(match.getId(), seenPlayerIds);
             }
 
             return toSave.size();
@@ -371,7 +371,7 @@ public class MatchDetailsImportService {
     }
 
     private void upsertLineupFast(Match match,
-                                  Teams teams,
+                                  Team team,
                                   JsonNode playerNode,
                                   boolean starter,
                                   Map<Integer, Player> playerByApiId,
@@ -394,8 +394,8 @@ public class MatchDetailsImportService {
 
         MatchLineUp lu = existingByPlayerId.getOrDefault(player.getId(), new MatchLineUp());
         lu.setMatch(match);
-        lu.setTeams(teams);
-        lu.setPlayer(player);
+        lu.setTeam(team);
+        lu.setPlayers(player);
         lu.setStarter(starter);
         lu.setPosition(position);
 

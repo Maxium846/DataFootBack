@@ -10,8 +10,8 @@ public class MatchLineUpMapper {
         MatchLineUpDto matchLineUpDto = new MatchLineUpDto();
         matchLineUpDto.setId(matchLineUp.getId());
         matchLineUpDto.setStarter(matchLineUpDto.getStarter());
-        matchLineUpDto.setTeamId(matchLineUp.getTeams().getId());
-        matchLineUpDto.setPlayerName(matchLineUp.getPlayer().getName());
+        matchLineUpDto.setTeamId(matchLineUp.getTeam().getId());
+        matchLineUpDto.setPlayerName(matchLineUp.getPlayers().getName());
         return matchLineUpDto;
     }
 }

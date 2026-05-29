@@ -7,7 +7,7 @@ import com.dataFoot.player.dto.PlayerInClubDto;
 import com.dataFoot.player.Player;
 import com.dataFoot.player.dtoplayerprofilapi.PlayerProfilItem;
 import com.dataFoot.player.dtoplayersquadapi.PlayerItemPlayersApi;
-import com.dataFoot.team.Teams;
+import com.dataFoot.team.Team;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -31,20 +31,20 @@ public class PlayerMapper {
         dto.setAge(player.getBirthday() != null
                 ? (int) player.getBirthday().until(LocalDate.now(), ChronoUnit.YEARS)
                 : 0); // ou null si ton champ peut être Integer
-        if (player.getTeams() != null) {
-            dto.setClubName(player.getTeams().getName());
+        if (player.getTeam() != null) {
+            dto.setClubName(player.getTeam().getName());
         }
         dto.setNation(player.getNation());
         dto.setPhoto(player.getPhoto());
-        dto.setLeagueName(player.getTeams().getLeague().getName());
+        dto.setLeagueName(player.getTeam().getLeague().getName());
         return dto;
     }
 
     public static PlayerDto toDto(Player player) {
         PlayerDto dto = new PlayerDto();
         dto.setId(player.getId());
-        if(player.getTeams() != null){
-            dto.setClubId(player.getTeams().getId());
+        if(player.getTeam() != null){
+            dto.setClubId(player.getTeam().getId());
 
         }
 
@@ -59,17 +59,17 @@ public class PlayerMapper {
         dto.setAge(player.getBirthday() != null
                 ? (int) player.getBirthday().until(LocalDate.now(), ChronoUnit.YEARS)
                 : 0); // ou null si ton champ peut être Integer
-        if (player.getTeams() != null) {
-            dto.setClubName(player.getTeams().getName());
+        if (player.getTeam() != null) {
+            dto.setClubName(player.getTeam().getName());
         }
         dto.setNation(player.getNation());
         dto.setPhoto(player.getPhoto());
-        if(player.getTeams() != null){
-            dto.setLeagueName(player.getTeams().getLeague().getName());
+        if(player.getTeam() != null){
+            dto.setLeagueName(player.getTeam().getLeague().getName());
         }
-        if(player.getTeams() != null) {
+        if(player.getTeam() != null) {
 
-            dto.setLogo(player.getTeams().getLogo());
+            dto.setLogo(player.getTeam().getLogo());
         }
         if(player.getName() != null){
             dto.setName(player.getName());
@@ -79,7 +79,7 @@ public class PlayerMapper {
 
     public static PlayerApiDto toDtoApi(Player player) {
         PlayerApiDto dto = new PlayerApiDto();
-        dto.setTeamId(player.getTeams().getId());
+        dto.setTeamId(player.getTeam().getId());
         dto.setNumber(player.getNumber());
         dto.setSize(player.getSize());
         dto.setWeight(player.getWeight());
@@ -92,7 +92,7 @@ public class PlayerMapper {
 
         return dto;
     }
-    public static Player toUpdateEntity(Player player , PlayerItemPlayersApi playerItemPlayersApi , PlayerProfilItem playerProfilItem, Teams team, Position position){
+    public static Player toUpdateEntity(Player player , PlayerItemPlayersApi playerItemPlayersApi , PlayerProfilItem playerProfilItem, Team team, Position position){
 
         player.setApiFootballPlayerId(playerItemPlayersApi.getId());
         player.setName(playerItemPlayersApi.getName());
@@ -106,7 +106,7 @@ public class PlayerMapper {
         }
         player.setNation(playerProfilItem.getPlayer().getNationality());
         player.setPhoto(playerItemPlayersApi.getPhoto());
-        player.setTeams(team);
+        player.setTeam(team);
         return player;
 
     }

@@ -3,7 +3,7 @@ package com.dataFoot.matchlineup;
 import com.dataFoot.enumeration.Position;
 import com.dataFoot.match.Match;
 import com.dataFoot.player.Player;
-import com.dataFoot.team.Teams;
+import com.dataFoot.team.Team;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,7 +24,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"match","player","teams"})
+@ToString(exclude = {"match","players","team"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class MatchLineUp {
 
@@ -39,11 +39,11 @@ public class MatchLineUp {
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name="player_id", nullable=false)
-    private Player player;
+    private Player players;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name="team_id", nullable=false)
-    private Teams teams;
+    private Team team;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable=false)

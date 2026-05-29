@@ -1,7 +1,7 @@
 package com.dataFoot.league;
 
 import com.dataFoot.ranking.Ranking;
-import com.dataFoot.team.Teams;
+import com.dataFoot.team.Team;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,7 +29,7 @@ public class League {
     private String country;
 
     @OneToMany(mappedBy = "league", fetch = FetchType.LAZY)
-    private List<Teams> teams = new ArrayList<>();
+    private List<Team> teams = new ArrayList<>();
 
     @OneToMany(mappedBy = "league",fetch = FetchType.LAZY)
     private List<Ranking> rankings = new ArrayList<>();

@@ -2,7 +2,7 @@ package com.dataFoot.playerstat;
 
 import com.dataFoot.match.Match;
 import com.dataFoot.player.Player;
-import com.dataFoot.team.Teams;
+import com.dataFoot.team.Team;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,7 +12,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@ToString(exclude = "player")
+@ToString(exclude = "players")
 @Table(name = "player_match_stats")
 public class PlayerStats {
 
@@ -21,13 +21,13 @@ public class PlayerStats {
     private Long id;
     @ManyToOne
     @JoinColumn(name = "player_id")
-    private Player player;
+    private Player players;
     @ManyToOne
     @JoinColumn(name = "match_id")
     private Match match;
     @ManyToOne
     @JoinColumn(name = "club_id")
-    private Teams teams;
+    private Team team;
 
     private String nameClub;
     private String nameJoueur;

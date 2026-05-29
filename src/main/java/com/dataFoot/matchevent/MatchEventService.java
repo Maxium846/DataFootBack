@@ -5,7 +5,7 @@ import com.dataFoot.enumeration.EventType;
 import com.dataFoot.match.MatchRepository;
 import com.dataFoot.player.PlayersRepository;
 import com.dataFoot.team.TeamRepository;
-import com.dataFoot.team.Teams;
+import com.dataFoot.team.Team;
 import com.dataFoot.match.Match;
 import com.dataFoot.player.Player;
 import org.springframework.stereotype.Service;
@@ -43,7 +43,7 @@ public class MatchEventService {
 
     public MatchEventDto saveEvent(MatchEventDto dto) {
         Match match = matchRepository.findById(dto.getMatchId()).orElseThrow();
-        Teams teams = teamRepository.findById(dto.getTeamId()).orElseThrow();
+        Team team = teamRepository.findById(dto.getTeamId()).orElseThrow();
         Player player = playersRepository.findById(dto.getPlayerId()).orElseThrow();
 
 
@@ -55,7 +55,7 @@ public class MatchEventService {
             event.setEventType(EventType.valueOf(dto.getEventType().toUpperCase()));
 
         }
-        event.setTeams(teams);
+        event.setTeam(team);
         event.setMinute(dto.getMinutes());
 
 
@@ -71,7 +71,7 @@ public class MatchEventService {
         dto.setId(event.getId());
         dto.setMatchId(event.getMatch().getId());
         dto.setMinutes(event.getMinute());
-        dto.setTeamId(event.getTeams().getId());
+        dto.setTeamId(event.getTeam().getId());
 
         if (event.getEventType() != null) {
             dto.setEventType(event.getEventType().name());

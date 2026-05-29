@@ -17,9 +17,9 @@ public interface MatchLineUpRepository extends JpaRepository<MatchLineUp, Long> 
     @Query("delete from MatchLineUp ml where ml.match.id = :matchId")
     void deleteAllByMatchId(@Param("matchId") Long matchId);
 
-    Optional<MatchLineUp> findByMatchIdAndPlayerId(Long matchId, Long playerId);
+    Optional<MatchLineUp> findByMatchIdAndPlayersId(Long matchId, Long playerId);
 
-    void deleteByMatchIdAndPlayerIdNotIn(Long matchId, java.util.Collection<Long> playerIds);
+    void deleteByMatchIdAndPlayersIdNotIn(Long matchId, java.util.Collection<Long> playerIds);
 
 }
 

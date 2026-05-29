@@ -13,15 +13,15 @@ public interface RankingRepository extends JpaRepository<Ranking,Long> {
     @Query("""
     SELECT c
     FROM Ranking c
-    JOIN FETCH c.teams
+    JOIN FETCH c.team
     WHERE c.league.id = :leagueId
     ORDER BY c.points DESC , c.goalDifference DESC
 """)
     List<Ranking> findByLeagueIdWithClub(@Param("leagueId") Long leagueId);
 
-    //Optional<Ranking> findByLeagueAndClub(League league, Teams teams);
+    //Optional<Ranking> findByLeagueAndClub(League league, Teams team);
 
-    //List<Teams> findByClub(Teams teams);
+    //List<Teams> findByClub(Teams team);
     //boolean existsByLeagueIdAndClubId(Long leagueId, Long clubId);
 
 //    @Transactional

@@ -9,13 +9,13 @@ public class MatchMapper {
         return MatchDto.builder().id(match.getId()).
                 played(match.isPlayed())
                 .matchDate(match.getMatchDate())
-                .awayTeamId(match.getAwayTeams().getId())
-                .homeTeamId(match.getHomeTeams().getId())
+                .awayTeamId(match.getAwayTeam().getId())
+                .homeTeamId(match.getHomeTeam().getId())
                 .journee(match.getJournee())
                 .awayGoals(match.getAwayGoals())
                 .homeGoals(match.getHomeGoals())
-                .homeTeamName(match.getHomeTeams().getName())
-                .awayTeamName(match.getAwayTeams().getName())
+                .homeTeamName(match.getHomeTeam().getName())
+                .awayTeamName(match.getAwayTeam().getName())
                 .build();
 
     }

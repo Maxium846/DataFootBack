@@ -3,7 +3,7 @@ package com.dataFoot.matchstat;
 import com.dataFoot.matchstat.dto.MatchstatDto;
 import com.dataFoot.exception.RateLimitException;
 import com.dataFoot.matchstat.mapper.MatchStatMapper;
-import com.dataFoot.team.Teams;
+import com.dataFoot.team.Team;
 import com.dataFoot.match.Match;
 import com.dataFoot.team.TeamRepository;
 import com.dataFoot.match.MatchRepository;
@@ -70,7 +70,7 @@ public void importStatMatch(Long leagueId) throws Exception {
 
                 Long apiteamId = json.path("team").path("id").isMissingNode()? null: json.path("team").path("id").asLong();
                 if(apiteamId == null) continue;
-                Teams clubs = teamRepository.findByLeagueId(leagueId).stream().filter(c -> Objects.equals(c.getApiFootballTeamId(),apiteamId)).findFirst().orElse(null);
+                Team clubs = teamRepository.findByLeagueId(leagueId).stream().filter(c -> Objects.equals(c.getApiFootballTeamId(),apiteamId)).findFirst().orElse(null);
                 if (clubs == null) continue;
                 JsonNode statsArray = json.path("statistics");
                 Map<String, JsonNode> stats = new HashMap<>();
@@ -157,8 +157,8 @@ public void importStatMatch(Long leagueId) throws Exception {
 
 
 
-                    MatchStat matchStat = matchStatRepository.findByMatchIdAndTeamsId_Id(match.getId(),clubs.getId()).orElseGet(MatchStat::new);
-                    matchStat.setTeamsId(clubs);
+                    MatchStat matchStat = matchStatRepository.findByMatchIdAndTeamId_Id(match.getId(),clubs.getId()).orElseGet(MatchStat::new);
+                    matchStat.setTeamId(clubs);
                     matchStat.setMatch(match);
                     matchStat.setFouls(fouls);
                     matchStat.setShootsOnGoals(apiShootOnGoals);

@@ -5,8 +5,8 @@ import com.dataFoot.league.LeagueRepository;
 import com.dataFoot.ranking.Ranking;
 import com.dataFoot.ranking.RankingRepository;
 import com.dataFoot.ranking.RankingService;
+import com.dataFoot.team.Team;
 import com.dataFoot.team.TeamRepository;
-import com.dataFoot.team.Teams;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
@@ -67,7 +67,7 @@ public class FixtureImportService {
 
 
         // Clubs + init classement
-        List<Teams> clubs = teamRepository.findByLeagueId(leagueId);
+        List<Team> clubs = teamRepository.findByLeagueId(leagueId);
         initClassement(league,clubs);
         if (clubs.size() < 2) throw new RuntimeException("Pas assez de clubs");
 
@@ -103,8 +103,8 @@ public class FixtureImportService {
                 continue;
             }
 
-            Teams home = teamRepository.findByLeagueIdAndApiFootballTeamId(leagueId, homeTeamId).orElse(null);
-            Teams away = teamRepository.findByLeagueIdAndApiFootballTeamId(leagueId, awayTeamId).orElse(null);
+            Team home = teamRepository.findByLeagueIdAndApiFootballTeamId(leagueId, homeTeamId).orElse(null);
+            Team away = teamRepository.findByLeagueIdAndApiFootballTeamId(leagueId, awayTeamId).orElse(null);
             if (home == null || away == null) {
                 // si tes clubs ne sont pas importés / apiFootballTeamId pas renseigné
                 skipped++;
@@ -126,8 +126,8 @@ public class FixtureImportService {
             Match match = matchRepository.findByApiFootballFixtureId(fixtureId)
                     .orElseGet(Match::new);
             match.setLeague(league);
-            match.setHomeTeams(home);
-            match.setAwayTeams(away);
+            match.setHomeTeam(home);
+            match.setAwayTeam(away);
             match.setJournee(journee);
             match.setMatchDate(matchDate);
 
@@ -146,12 +146,12 @@ public class FixtureImportService {
         return created + " matchs importés, " + skipped + " ignorés, classement recalculé.";
     }
 
-    private void initClassement(League league, List<Teams> t) {
+    private void initClassement(League league, List<Team> t) {
         List<Ranking> rankings = new ArrayList<>();
-        for (Teams teams : t) {
+        for (Team team : t) {
             Ranking c = new Ranking();
             c.setLeague(league);
-            c.setTeams(teams);
+            c.setTeam(team);
             c.setPoints(0);
             c.setPlayed(0);
             c.setWins(0);

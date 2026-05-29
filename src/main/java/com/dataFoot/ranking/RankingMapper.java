@@ -12,8 +12,8 @@ public class RankingMapper {
 
     public static RankingDto toDto(Ranking c) {
         RankingDto dto = new RankingDto();
-        dto.setTeamId(c.getTeams().getId());
-        dto.setTeamName(c.getTeams().getName());
+        dto.setTeamId(c.getTeam().getId());
+        dto.setTeamName(c.getTeam().getName());
         dto.setPlayed(c.getPlayed());
         dto.setWins(c.getWins());
         dto.setDraws(c.getDraws());
@@ -27,8 +27,8 @@ public class RankingMapper {
 
     public static RankinkDtoAccueil toDtoPageAccueil(Ranking c) {
         RankinkDtoAccueil dto = new RankinkDtoAccueil();
-        dto.setClubId(c.getTeams().getId());
-        dto.setClubName(c.getTeams().getName());
+        dto.setClubId(c.getTeam().getId());
+        dto.setClubName(c.getTeam().getName());
         dto.setPlayed(c.getPlayed());
         dto.setLeagueName(c.getLeague().getName());
         dto.setPoints(c.getPoints());

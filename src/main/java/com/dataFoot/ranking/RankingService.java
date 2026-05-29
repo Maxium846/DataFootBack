@@ -56,7 +56,7 @@ public class RankingService {
         }
 
         Map<Long, Ranking> classementByClub = rankings.stream()
-                .collect(Collectors.toMap(c -> c.getTeams().getId(), c -> c));
+                .collect(Collectors.toMap(c -> c.getTeam().getId(), c -> c));
 
         // 🔹 Reset
         classementByClub.values().forEach(c -> {
@@ -77,8 +77,8 @@ public class RankingService {
                 .toList();
 
         for (Match m : matches) {
-            Ranking home = classementByClub.get(m.getHomeTeams().getId());
-            Ranking away = classementByClub.get(m.getAwayTeams().getId());
+            Ranking home = classementByClub.get(m.getHomeTeam().getId());
+            Ranking away = classementByClub.get(m.getAwayTeam().getId());
 
             home.setPlayed(home.getPlayed() + 1);
             away.setPlayed(away.getPlayed() + 1);

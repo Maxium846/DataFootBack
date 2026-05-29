@@ -1,7 +1,7 @@
 package com.dataFoot.ranking;
 
 import com.dataFoot.league.League;
-import com.dataFoot.team.Teams;
+import com.dataFoot.team.Team;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,7 +21,7 @@ public class Ranking {
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id", nullable = false)
-    private Teams teams;
+    private Team team;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "league_id", nullable = false)

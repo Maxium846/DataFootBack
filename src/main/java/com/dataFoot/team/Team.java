@@ -13,12 +13,12 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"player", "rankings"})
+@ToString(exclude = {"players", "rankings"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 
 @Table(name = "teams")
-public class Teams {
+public class Team {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,13 +28,13 @@ public class Teams {
     @Column(nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "teams")
-    private List<Player> player = new ArrayList<>();
+    @OneToMany(mappedBy = "team")
+    private List<Player> players = new ArrayList<>();
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "league_id", nullable = false)
     private League league;
-    @OneToMany(mappedBy = "teams")
+    @OneToMany(mappedBy = "team")
     private List<Ranking> rankings = new ArrayList<>();
 
     private Integer founded;

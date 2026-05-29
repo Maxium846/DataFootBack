@@ -3,7 +3,7 @@ package com.dataFoot.player;
 import com.dataFoot.enumeration.Position;
 import com.dataFoot.matchlineup.MatchLineUp;
 import com.dataFoot.playerstat.PlayerStats;
-import com.dataFoot.team.Teams;
+import com.dataFoot.team.Team;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,7 +15,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"teams", "matchLineUps"})
+@ToString(exclude = {"team", "matchLineUps"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "player")
@@ -31,12 +31,12 @@ public class Player {
     private Position position;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id")
-    private Teams teams;
+    private Team team;
     private String nation;
     private LocalDate birthday;
-    @OneToMany(mappedBy = "player")
+    @OneToMany(mappedBy = "players")
     private List<PlayerStats> playerStats;
-    @OneToMany(mappedBy = "player")
+    @OneToMany(mappedBy = "players")
     private List<MatchLineUp> matchLineUps = new ArrayList<>();
     @Column(unique = true)
     private Integer apiFootballPlayerId;

@@ -11,7 +11,7 @@ import com.dataFoot.player.dtoplayersquadapi.PlayerItemApi;
 import com.dataFoot.player.dtoplayersquadapi.PlayerItemPlayersApi;
 import com.dataFoot.player.dtoplayersquadapi.PlayerResponseApi;
 import com.dataFoot.player.mapper.PlayerMapper;
-import com.dataFoot.team.Teams;
+import com.dataFoot.team.Team;
 import com.dataFoot.team.TeamRepository;
 import com.dataFoot.league.LeagueRepository;
 import jakarta.transaction.Transactional;
@@ -48,13 +48,13 @@ public class PlayerImportService {
         League league = leagueRepository.findById(leagueId)
                 .orElseThrow(() -> new LeagueNotFoundException(" la League " + leagueId + " est inexistante"));
 
-        List<Teams> teamsList = teamRepository.findByLeagueId(league.getId());
+        List<Team> teamList = teamRepository.findByLeagueId(league.getId());
         List<Player> playersToSave = new ArrayList<>();
 
         // Cache pour éviter les doublons
         Set<Integer> dejaImportes = new HashSet<>();
 
-        for (Teams team : teamsList) {
+        for (Team team : teamList) {
 
             Long apiTeamId = team.getApiFootballTeamId();
 
