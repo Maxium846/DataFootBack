@@ -7,7 +7,7 @@ import lombok.*;
 
 @Entity
 @Table(name = "ranking",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"league_id", "club_id"}))
+        uniqueConstraints = @UniqueConstraint(columnNames = {"league_id", "team_id"}))
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -1,22 +1,27 @@
 package com.dataFoot.match;
 
+import com.dataFoot.exception.entitexception.ExternalApiException;
+import com.dataFoot.exception.entitexception.LeagueNotFoundException;
+import com.dataFoot.exception.entitexception.MatchNotFoundException;
+import com.dataFoot.exception.entitexception.TeamNotFoundException;
 import com.dataFoot.league.League;
 import com.dataFoot.league.LeagueRepository;
+import com.dataFoot.match.matchdtoapi.ResponseApItemDtoMatch;
+import com.dataFoot.match.matchdtoapi.ResponseApiMatch;
 import com.dataFoot.ranking.Ranking;
 import com.dataFoot.ranking.RankingRepository;
 import com.dataFoot.ranking.RankingService;
 import com.dataFoot.team.Team;
 import com.dataFoot.team.TeamRepository;
+import com.dataFoot.team.teamdtoapi.ResponseApiTeamsDto;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -31,9 +36,8 @@ public class FixtureImportService {
     private final MatchRepository matchRepository;
     private final RankingRepository rankingRepository;
     private final RankingService rankingService;
-    private final ObjectMapper objectMapper;
+    private final RestClient  apiSportClient;
 
-    private final HttpClient httpClient = HttpClient.newHttpClient();
 
     @Value("${apisports.key}")
     private String apiSportsKey;
@@ -45,102 +49,78 @@ public class FixtureImportService {
                                 MatchRepository matchRepository,
                                 RankingRepository rankingRepository,
                                 RankingService rankingService,
-                                ObjectMapper objectMapper) {
+                                RestClient apiSportClient) {
         this.leagueRepository = leagueRepository;
         this.teamRepository = teamRepository;
         this.matchRepository = matchRepository;
         this.rankingRepository = rankingRepository;
         this.rankingService = rankingService;
-        this.objectMapper = objectMapper;
+        this.apiSportClient = apiSportClient;
     }
 
     @Transactional
-    public String generateCalendarFromApiFootball(Long leagueId) {
+    public String generateCalendarFromApiFootball(Long leagueId,int season) {
 
         League league = leagueRepository.findById(leagueId)
-                .orElseThrow(() -> new RuntimeException("League not found"));
+                .orElseThrow(() -> new LeagueNotFoundException("La ligue avec l'id  : " + leagueId + " n'existe pas en base"));
 
         Integer apiFootballLeagueId = league.getApiFootballLeagueId();
         if (apiFootballLeagueId == null) {
-            throw new RuntimeException("League missing apiFootballLeagueId (ex Premier League = 39)");
+            throw new LeagueNotFoundException("la ligue avec l'id" + leagueId + "n'a pas de  correspondant en base ");
         }
 
 
         // Clubs + init classement
         List<Team> clubs = teamRepository.findByLeagueId(leagueId);
         initClassement(league,clubs);
-        if (clubs.size() < 2) throw new RuntimeException("Pas assez de clubs");
 
-        int season = 2025; // 2025/2026
-        List<JsonNode> fixtures = fetchFixtures(apiFootballLeagueId, season);
+        String path ="/fixtures?league=" + apiFootballLeagueId + "&season=" + season;
 
+        ResponseApiMatch responseApiMatch = callApi(path);
+        if (responseApiMatch == null || responseApiMatch.getResponse() == null || responseApiMatch.getResponse().isEmpty()) {
+
+            throw new MatchNotFoundException("Aucun match  n'a été trouvé pour cette ligue et cette saison");
+        }
         int created = 0;
         int skipped = 0;
+        List<Match> matchSave = new ArrayList<>();
+        for (ResponseApItemDtoMatch dto : responseApiMatch.getResponse()){
 
-        for (JsonNode item : fixtures) {
+            Team teamHome = teamRepository.findByApiFootballTeamId(dto.getTeams().getHome().getId()).orElseThrow();
+            Team teamAway = teamRepository.findByApiFootballTeamId(dto.getTeams().getAway().getId()).orElseThrow();
 
-            JsonNode fixture = item.path("fixture");
-            JsonNode teams = item.path("teams");
-            JsonNode goals = item.path("goals");
-            JsonNode leagueNode = item.path("league");
+            Match match = matchRepository.findByApiFootballFixtureId(dto.getFixture().getId()).orElseGet(Match::new);
 
-            // FixtureId
-            int fixtureId = fixture.path("id").asInt();
-
-            // Date (API gives ISO with offset)
-            String isoDate = fixture.path("date").asText(null);
+            Integer journee = parseRoundToJournee(dto.getLeague().getRound());
+            if (journee == null) {
+                skipped++;
+                continue;
+            }
+            String isoDate = dto.getFixture().getDate();
             LocalDate matchDate = parseToParisLocalDate(isoDate);
             if (matchDate == null) {
                 skipped++;
                 continue;
             }
-
-            // Team ids
-            Long homeTeamId = teams.path("home").path("id").isMissingNode() ? null : teams.path("home").path("id").asLong();
-            Long awayTeamId = teams.path("away").path("id").isMissingNode() ? null : teams.path("away").path("id").asLong();
-            if (homeTeamId == null || awayTeamId == null) {
-                skipped++;
-                continue;
-            }
-
-            Team home = teamRepository.findByLeagueIdAndApiFootballTeamId(leagueId, homeTeamId).orElse(null);
-            Team away = teamRepository.findByLeagueIdAndApiFootballTeamId(leagueId, awayTeamId).orElse(null);
-            if (home == null || away == null) {
-                // si tes clubs ne sont pas importés / apiFootballTeamId pas renseigné
-                skipped++;
-                continue;
-            }
-
-            Integer journee = parseRoundToJournee(leagueNode.path("round").asText(null));
-            if (journee == null) {
-                skipped++;
-                continue;
-            }
-
-            Integer homeGoals = goals.path("home").isNull() ? null : goals.path("home").asInt();
-            Integer awayGoals = goals.path("away").isNull() ? null : goals.path("away").asInt();
-
-            String statusShort = fixture.path("status").path("short").asText("");
-            boolean played = isPlayed(statusShort) && homeGoals != null && awayGoals != null;
-
-            Match match = matchRepository.findByApiFootballFixtureId(fixtureId)
-                    .orElseGet(Match::new);
+            String statusShort = dto.getFixture().getStatus().getShortStatus();
+            boolean played = isPlayed(statusShort) && dto.getGoals().getHome()!= null && dto.getGoals().getAway() != null;
+            match.setAwayTeam(teamAway);
+            match.setHomeTeam(teamHome);
+            match.setAwayGoals(dto.getGoals().getAway());
+            match.setHomeGoals(dto.getGoals().getHome());
+            match.setApiFootballFixtureId(dto.getFixture().getId());
             match.setLeague(league);
-            match.setHomeTeam(home);
-            match.setAwayTeam(away);
+            match.setPlayed(played);
             match.setJournee(journee);
             match.setMatchDate(matchDate);
 
-            match.setHomeGoals(homeGoals);
-            match.setAwayGoals(awayGoals);
-            match.setPlayed(played);
 
-            match.setApiFootballFixtureId(fixtureId);
+            matchSave.add(match);
 
-            matchRepository.save(match);
-            created++;
         }
 
+        matchRepository.saveAll(matchSave);
+        created++;
         rankingService.recalculateLeague(league);
 
         return created + " matchs importés, " + skipped + " ignorés, classement recalculé.";
@@ -149,6 +129,10 @@ public class FixtureImportService {
     private void initClassement(League league, List<Team> t) {
         List<Ranking> rankings = new ArrayList<>();
         for (Team team : t) {
+            boolean exists = rankingRepository.existsByLeagueIdAndTeamId(league.getId(),team.getId());
+            if(exists){
+                continue;
+            }
             Ranking c = new Ranking();
             c.setLeague(league);
             c.setTeam(team);
@@ -165,40 +149,20 @@ public class FixtureImportService {
         rankingRepository.saveAll(rankings);
     }
 
-    private List<JsonNode> fetchFixtures(int apiLeagueId, int season) {
+    private ResponseApiMatch callApi(String path) {
+
         try {
-            String url = BASE_URL + "/fixtures?league=" + apiLeagueId + "&season=" + season;
-            String json = fetchUrlWithHeaders(url);
+            return apiSportClient.get().uri(path)
+                    .retrieve()
+                    .body(ResponseApiMatch.class);
+        } catch (RestClientException e) {
 
-            JsonNode root = objectMapper.readTree(json);
-            JsonNode response = root.path("response");
-            if (!response.isArray()) return List.of();
-
-            List<JsonNode> out = new ArrayList<>();
-            response.forEach(out::add);
-            return out;
-        } catch (Exception e) {
-            throw new RuntimeException("Erreur import fixtures API-FOOTBALL", e);
+            throw new ExternalApiException("Erreur lors de l'appel API ou du parsing JSON",e);
         }
-    }
-
-    private String fetchUrlWithHeaders(String url) throws Exception {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .GET()
-                .header("x-apisports-key", apiSportsKey)
-                .header("Accept", "application/json")
-                .build();
-
-        HttpResponse<String> resp = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        if (resp.statusCode() >= 400) {
-            throw new RuntimeException("API error " + resp.statusCode() + " body=" + resp.body());
-        }
-        return resp.body();
     }
 
     private boolean isPlayed(String statusShort) {
-        return "FT".equals(statusShort) || "AET".equals(statusShort) || "PEN".equals(statusShort);
+        return "FT".equals(statusShort) || "AET".equals(statusShort) || "PEN".equals(statusShort) || "ABD".equals(statusShort) ;
     }
 
     private Integer parseRoundToJournee(String round) {
@@ -223,4 +187,6 @@ public class FixtureImportService {
             return null;
         }
     }
+
+
 }

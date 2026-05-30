@@ -19,6 +19,8 @@ public interface RankingRepository extends JpaRepository<Ranking,Long> {
 """)
     List<Ranking> findByLeagueIdWithClub(@Param("leagueId") Long leagueId);
 
+    boolean existsByLeagueIdAndTeamId(Long leagueId, Long teamId);
+
     //Optional<Ranking> findByLeagueAndClub(League league, Teams team);
 
     //List<Teams> findByClub(Teams team);

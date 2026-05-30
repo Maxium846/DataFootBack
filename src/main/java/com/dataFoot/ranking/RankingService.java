@@ -58,7 +58,6 @@ public class RankingService {
         Map<Long, Ranking> classementByClub = rankings.stream()
                 .collect(Collectors.toMap(c -> c.getTeam().getId(), c -> c));
 
-        // 🔹 Reset
         classementByClub.values().forEach(c -> {
             c.setPoints(0);
             c.setPlayed(0);
@@ -70,7 +69,6 @@ public class RankingService {
             c.setGoalDifference(0);
         });
 
-        // 🔹 Seuls les matchs joués avec scores valides
         List<Match> matches = matchRepository.findByLeagueAndPlayedTrue(league)
                 .stream()
                 .filter(m -> m.getHomeGoals() != null && m.getAwayGoals() != null)
