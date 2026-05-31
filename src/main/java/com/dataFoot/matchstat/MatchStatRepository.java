@@ -12,6 +12,9 @@ public interface MatchStatRepository extends JpaRepository<MatchStat, Long> {
 
     Optional<MatchStat> findByMatchIdAndTeamId_Id(Long matchId, Long clubId);
 
+    boolean existsByMatchId(Long matchId);
+
+
 
 
 

@@ -1,47 +1,47 @@
 package com.dataFoot.matchstat;
 
+import com.dataFoot.exception.entitexception.ExternalApiException;
+import com.dataFoot.exception.entitexception.LeagueNotFoundException;
+import com.dataFoot.exception.entitexception.TeamNotFoundException;
+import com.dataFoot.league.League;
+import com.dataFoot.league.LeagueRepository;
 import com.dataFoot.matchstat.dto.MatchstatDto;
-import com.dataFoot.exception.RateLimitException;
+import com.dataFoot.matchstat.dtoapi.ApiFootballMatchStatItems;
+import com.dataFoot.matchstat.dtoapi.ApiFootballMatchStatResponse;
+import com.dataFoot.matchstat.dtoapi.ApiFootballMatchStatStatistique;
 import com.dataFoot.matchstat.mapper.MatchStatMapper;
-import com.dataFoot.team.Team;
 import com.dataFoot.match.Match;
+import com.dataFoot.team.Team;
 import com.dataFoot.team.TeamRepository;
 import com.dataFoot.match.MatchRepository;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Value;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.util.HashMap;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 @Service
 public class MatchStatService {
 
 
-    private final ObjectMapper objectMapper;
-    private static final String BASE_URL = "https://v3.football.api-sports.io";
-    private final HttpClient httpClient = HttpClient.newHttpClient();
 
     private final MatchRepository matchRepository;
 
+    private final LeagueRepository leagueRepository;
     private final TeamRepository teamRepository;
     private final MatchStatRepository matchStatRepository;
 
-    @Value("${apisports.key}")
-    private String apiSportsKey;
+    private final RestClient  apiSportClient;
 
-    public MatchStatService(ObjectMapper objectMapper, MatchRepository matchRepository, TeamRepository teamRepository, MatchStatRepository matchStatRepository) {
-        this.objectMapper = objectMapper;
+
+    public MatchStatService(MatchRepository matchRepository, LeagueRepository leagueRepository, TeamRepository teamRepository, MatchStatRepository matchStatRepository, RestClient apiSportClient) {
         this.matchRepository = matchRepository;
+        this.leagueRepository = leagueRepository;
         this.teamRepository = teamRepository;
         this.matchStatRepository = matchStatRepository;
+        this.apiSportClient = apiSportClient;
     }
 
 
@@ -53,172 +53,173 @@ public class MatchStatService {
         return matchStatRepository.findByMatchId(match.getId()).stream().map(MatchStatMapper::toInDto).toList();
 
     }
-public void importStatMatch(Long leagueId) throws Exception {
-
-
-        List<Match> matches = matchRepository.findByLeagueId(leagueId);
-
-        for(Match match : matches) {
-
-            int fixtureId = match.getApiFootballFixtureId();
-
-            String url ="https://v3.football.api-sports.io/fixtures/statistics?fixture=" + fixtureId ;
-           JsonNode reponse = callApiWithRetry(url).path("response");
-
-
-            for (JsonNode json : reponse){
-
-                Long apiteamId = json.path("team").path("id").isMissingNode()? null: json.path("team").path("id").asLong();
-                if(apiteamId == null) continue;
-                Team clubs = teamRepository.findByLeagueId(leagueId).stream().filter(c -> Objects.equals(c.getApiFootballTeamId(),apiteamId)).findFirst().orElse(null);
-                if (clubs == null) continue;
-                JsonNode statsArray = json.path("statistics");
-                Map<String, JsonNode> stats = new HashMap<>();
-
-                if (statsArray.isArray()) {
-                    for (JsonNode s : statsArray) {
-                        String type = s.path("type").asText(null);
-                        JsonNode value = s.get("value"); // peut être null
-                        if (type != null) stats.put(type, value);
-                    }
-                }
-
-                Integer fouls = stats.get("Fouls") == null || stats.get("Fouls").isNull() ? null : stats.get("Fouls").asInt();
-                Integer apiShootOnGoals =
-                        stats.get("Shots on Goal") == null || stats.get("Shots on Goal").isNull()
-                                ? null : stats.get("Shots on Goal").asInt();
-
-                Integer apishotsOffGoals =
-                        stats.get("Shots off Goal") == null || stats.get("Shots off Goal").isNull()
-                                ? null : stats.get("Shots off Goal").asInt();
-
-                Integer totalShoot =
-                        stats.get("Total Shots") == null || stats.get("Total Shots").isNull()
-                                ? null : stats.get("Total Shots").asInt();
-
-                Integer blockedShoot =
-                        stats.get("Blocked Shots") == null || stats.get("Blocked Shots").isNull()
-                                ? null : stats.get("Blocked Shots").asInt();
-
-                Integer shotsInsideBox =
-                        stats.get("Shots insidebox") == null || stats.get("Shots insidebox").isNull()
-                                ? null : stats.get("Shots insidebox").asInt();
-
-                Integer shootOutsideBox =
-                        stats.get("Shots outsidebox") == null || stats.get("Shots outsidebox").isNull()
-                                ? null : stats.get("Shots outsidebox").asInt();
-
-                Integer cornerKick =
-                        stats.get("Corner Kicks") == null || stats.get("Corner Kicks").isNull()
-                                ? null : stats.get("Corner Kicks").asInt();
-
-                Integer offsides =
-                        stats.get("Offsides") == null || stats.get("Offsides").isNull()
-                                ? null : stats.get("Offsides").asInt();
-
-                Integer ballPossession =
-                        stats.get("Ball Possession") == null || stats.get("Ball Possession").isNull()
-                                ? null
-                                : Integer.parseInt(stats.get("Ball Possession").asText().replace("%", ""));
-
-                Integer passePercentage =
-                        stats.get("Passes %") == null || stats.get("Passes %").isNull()
-                                ? null
-                                : Integer.parseInt(stats.get("Passes %").asText().replace("%", ""));
-
-                Integer yellowCards =
-                        stats.get("Yellow Cards") == null || stats.get("Yellow Cards").isNull()
-                                ? null : stats.get("Yellow Cards").asInt();
-
-                Integer redCards =
-                        stats.get("Red Cards") == null || stats.get("Red Cards").isNull()
-                                ? null : stats.get("Red Cards").asInt();
-
-                Integer goalKeepersave =
-                        stats.get("Goalkeeper Saves") == null || stats.get("Goalkeeper Saves").isNull()
-                                ? null : stats.get("Goalkeeper Saves").asInt();
-
-                Integer totalPasses =
-                        stats.get("Total passes") == null || stats.get("Total passes").isNull()
-                                ? null : stats.get("Total passes").asInt();
-
-                Integer passesAccurate =
-                        stats.get("Passes accurate") == null || stats.get("Passes accurate").isNull()
-                                ? null : stats.get("Passes accurate").asInt();
-
-
-                Integer expectedGoals =
-                        stats.get("expected_goals") == null || stats.get("expected_goals").isNull()
-                                ? null : stats.get("expected_goals").asInt();
-
-                Integer goalPrevented =
-                        stats.get("goals_prevented") == null || stats.get("goals_prevented").isNull()
-                                ? null : stats.get("goals_prevented").asInt();
 
 
 
-                    MatchStat matchStat = matchStatRepository.findByMatchIdAndTeamId_Id(match.getId(),clubs.getId()).orElseGet(MatchStat::new);
-                    matchStat.setTeamId(clubs);
-                    matchStat.setMatch(match);
-                    matchStat.setFouls(fouls);
-                    matchStat.setShootsOnGoals(apiShootOnGoals);
-                    matchStat.setShootOffGoals(apishotsOffGoals);
-                    matchStat.setTotalShots(totalShoot);
-                    matchStat.setBlockedShots(blockedShoot);
-                    matchStat.setShotInsideBox(shotsInsideBox);
-                    matchStat.setShotsOutsideBox(shootOutsideBox);
-                    matchStat.setCornerKick(cornerKick);
-                    matchStat.setOffsides(offsides);
-                    matchStat.setBallPossession(ballPossession);
-                    matchStat.setYellowCards(yellowCards);
-                    matchStat.setRedCards(redCards);
-                    matchStat.setGoalkeeperSave(goalKeepersave);
-                    matchStat.setTotalPasses(totalPasses);
-                    matchStat.setPassesAccurate(passesAccurate);
-                    matchStat.setPassesPercentage(passePercentage);
-                    matchStat.setExpectedGoals(expectedGoals);
-                    matchStat.setGoalsPrevented(goalPrevented);
+    @Transactional
+    public int importStatMatch(long leagueId){
 
-                    matchStatRepository.save(matchStat);
+        League league = leagueRepository.findById(leagueId)
+                .orElseThrow(() -> new LeagueNotFoundException("La ligue avec l'id  : " + leagueId + " n'existe pas en base"));
 
-                }
+        List<Match> matches = matchRepository.findByLeagueId(league.getId());
 
-            }
-
-        }
-
-    private JsonNode callApiWithRetry(String url) throws Exception {
-
-        int maxRetries = 8;
-        long baseWaitMs = 150;   // ✅ réduit (600ms c’est énorme)
-        long backoffMs = 1200;
-
-        for (int attempt = 1; attempt <= maxRetries; attempt++) {
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .GET()
-                    .header("x-apisports-key", apiSportsKey)
-                    .header("Accept", "application/json")
-                    .build();
-
-            HttpResponse<String> resp = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (resp.statusCode() == 429) {
-                Thread.sleep(backoffMs);
-                backoffMs = Math.min(backoffMs * 2, 20000);
+        int importStat = 0;
+        for(Match match : matches){
+            if(matchStatRepository.existsByMatchId(match.getId())){
                 continue;
             }
+            List<MatchStat> listMatchStat = new ArrayList<>();
 
-            if (resp.statusCode() >= 400) {
-                throw new RuntimeException("API error " + resp.statusCode() + " body=" + resp.body());
+            String path = "/fixtures/statistics?fixture=" + match.getApiFootballFixtureId();
+            ApiFootballMatchStatResponse response = callApi(path);
+
+
+            for(ApiFootballMatchStatItems items : response.getResponse()){
+
+                Team team = teamRepository.findByApiFootballTeamId(items.getTeam().getId()).orElseThrow(()->new TeamNotFoundException("La team n'existe pas"));
+
+
+                MatchStat matchStats = new MatchStat();
+
+                matchStats.setMatch(match);
+                matchStats.setTeamId(team);
+                for(ApiFootballMatchStatStatistique stat : items.getStatistics()) {
+
+                    String type = stat.getType();
+                    JsonNode value = stat.getValue();
+
+                    switch (type) {
+
+                        case "Shots on Goal" ->
+                                matchStats.setShootsOnGoals(toInteger(value));
+
+                        case "Shots off Goal" ->
+                                matchStats.setShootOffGoals(toInteger(value));
+
+                        case "Total Shots" ->
+                                matchStats.setTotalShots(toInteger(value));
+
+                        case "Blocked Shots" ->
+                                matchStats.setBlockedShots(toInteger(value));
+
+                        case "Shots insidebox" ->
+                                matchStats.setShotInsideBox(toInteger(value));
+
+                        case "Shots outsidebox" ->
+                                matchStats.setShotsOutsideBox(toInteger(value));
+
+                        case "Fouls" ->
+                                matchStats.setFouls(toInteger(value));
+
+                        case "Corner Kicks" ->
+                                matchStats.setCornerKick(toInteger(value));
+
+                        case "Offsides" ->
+                                matchStats.setOffsides(toInteger(value));
+
+                        case "Ball Possession" ->
+                                matchStats.setBallPossession(toPercentInteger(value));
+
+                        case "Yellow Cards" ->
+                                matchStats.setYellowCards(toInteger(value));
+
+                        case "Red Cards" ->
+                                matchStats.setRedCards(toInteger(value));
+
+                        case "Goalkeeper Saves" ->
+                                matchStats.setGoalkeeperSave(toInteger(value));
+
+                        case "Total passes" ->
+                                matchStats.setTotalPasses(toInteger(value));
+
+                        case "Passes accurate" ->
+                                matchStats.setPassesAccurate(toInteger(value));
+
+                        case "Passes %" ->
+                                matchStats.setPassesPercentage(toPercentInteger(value));
+
+                        case "expected_goals" ->
+                                matchStats.setExpectedGoals(toDouble(value));
+
+                        case "goals_prevented" ->
+                                matchStats.setGoalsPrevented(toDouble(value));
+                    }
+                }
+                listMatchStat.add(matchStats);
+                importStat++;
+
             }
+            matchStatRepository.saveAll(listMatchStat);
 
-            Thread.sleep(baseWaitMs);
-            return objectMapper.readTree(resp.body());
         }
 
-        throw new RateLimitException("Too many 429 retries for url=" + url);
+        return importStat;
+    }
+
+
+    private ApiFootballMatchStatResponse callApi(String path) {
+
+        try {
+            ApiFootballMatchStatResponse response = apiSportClient.get()
+                    .uri(path)
+                    .retrieve()
+                    .body(ApiFootballMatchStatResponse.class);
+
+            if(response == null || response.getResponse() == null){
+                throw new ExternalApiException("Réponse API vide pour : " + path);
+            }
+
+            return response;
+
+        } catch (RestClientException e) {
+            throw new ExternalApiException(
+                    "Erreur lors de l'appel API ou du parsing JSON",
+                    e
+            );
+        }
+    }
+
+    private Integer toInteger(JsonNode value) {
+        if (value == null || value.isNull()) {
+            return null;
+        }
+
+        if (value.isNumber()) {
+            return value.asInt();
+        }
+
+        if (value.isTextual()) {
+            String text = value.asText().replace("%", "").trim();
+
+            if (text.isBlank()) {
+                return null;
+            }
+
+            return Integer.parseInt(text);
+        }
+
+        return null;
+    }
+
+    private Double toDouble(JsonNode value) {
+
+        if(value == null || value.isNull()){
+            return null;
+        }
+
+        if(value.isNumber()){
+            return value.asDouble();
+        }
+
+        if(value.isTextual()){
+            return Double.parseDouble(value.asText());
+        }
+
+        return null;
+    }
+    private Integer toPercentInteger(JsonNode value) {
+        return toInteger(value);
     }
 
 

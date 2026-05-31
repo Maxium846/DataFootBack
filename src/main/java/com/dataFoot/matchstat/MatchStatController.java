@@ -17,10 +17,10 @@ public class MatchStatController {
     }
 
     @PostMapping("/{leagueId}")
-    public void importMatchStat(@PathVariable Long leagueId) throws Exception {
+    public int importMatchStat(@PathVariable Long leagueId) throws Exception {
 
 
-        matchStatService.importStatMatch(leagueId);
+        return matchStatService.importStatMatch(leagueId);
     }
 
     @GetMapping("/match/{matchId}")

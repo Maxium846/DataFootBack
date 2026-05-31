@@ -37,8 +37,8 @@ public class MatchStat {
     private Integer totalPasses;
     private Integer passesAccurate;
     private Integer passesPercentage;
-    private Integer expectedGoals;
-    private Integer goalsPrevented;
+    private Double expectedGoals;
+    private Double goalsPrevented;
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "match_id")
     private Match match;

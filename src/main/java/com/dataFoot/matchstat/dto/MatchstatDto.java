@@ -26,8 +26,8 @@ public class MatchstatDto {
     private Integer totalPasses;
     private Integer passesAccurate;
     private Integer passesPercentage;
-    private Integer expectedGoals;
-    private Integer goalsPrevented;
+    private Double expectedGoals;
+    private Double goalsPrevented;
 
     private Long match;
 
