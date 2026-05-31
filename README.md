@@ -1,5 +1,5 @@
 Présentation : 
-DataFoot est une API REST développé avec Spring Boot, permettant de récupérer et stocker des données footballistiques provenant de l'API API-Football.
+DataFoot est une API REST développée avec Spring Boot, permettant de récupérer et stocker des données footballistiques provenant de l'API API-Football.
 
 Le projet Permet de gérer différentes données 
 -Championnats
@@ -9,9 +9,9 @@ Le projet Permet de gérer différentes données
 -Statistique
 -Classement 
 
-Les données récupérées sont stockées dan sune base POstGreSQL pour étre ensuité exploitées par le Front.
+Les données récupérées sont stockées dans une base POstGreSQL pour étre ensuite exploitées par le Front.
 
-Une partie des données est aussi utilisées pour alimenter le Jeu guessThePlayer , ce jeu permet a l'utilisateur de deviner le joueur selon un niveau de difficulté qui est liés auclassement direct des équipes dans les différents championnats.
+Une partie des données est aussi utilisées pour alimenter le Jeu guessThePlayer , ce jeu permet a l'utilisateur de deviner le joueur selon un niveau de difficulté qui est liés au classement direct des équipes dans les différents championnats.
 
 Stack : 
 - Java 21
@@ -44,7 +44,7 @@ Api Externe :
 - Mapping vers les entités interne
 - Sauvegarde PostgreSQL
 - Exposition des Endpoints
-- 
+  
 Sécurité :
 L'application intègre une authentification pour pouvoir jouer au jeu
 - Inscription Utilisateur
