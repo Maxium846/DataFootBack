@@ -48,3 +48,5 @@ Api Externe :
 Amélioration prévus : 
 - Ajouter davantage de tests
 - Améliorer les performance des imports
+- Ajouter les saisons pour avoir les stats des joueurs et équipes sur plusieurs saison
+- Ajouter des comparatif de joueurs
