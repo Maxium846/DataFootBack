@@ -6,4 +6,8 @@ public class ExternalApiException extends RuntimeException {
 
         super(message,cause);
     }
+
+    public ExternalApiException(String message) {
+        super(message);
+    }
 }

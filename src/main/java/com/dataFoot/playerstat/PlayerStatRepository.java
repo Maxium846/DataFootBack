@@ -106,5 +106,9 @@ public interface PlayerStatRepository extends JpaRepository<PlayerStats, Long> {
                          COALESCE(SUM(ps.pastDribbles), 0L) DESC
             """)
     List<PlayerStatImpactDto> findPlayerStatsImpactByLeagueId(@Param("leagueId") Long leagueId);
+
+
+    boolean existsByMatchId(Long matchId);
+
 }
 

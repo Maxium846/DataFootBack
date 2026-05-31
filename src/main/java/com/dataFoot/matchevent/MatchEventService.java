@@ -93,7 +93,8 @@ public class MatchEventService {
                                         + event.getPlayer().getId()
                                         + ", nom="
                                         + event.getPlayer().getName()
-                        ));                Team team = teamRepository.findByApiFootballTeamId(event.getTeam().getId()).orElseThrow(()-> new TeamNotFoundException("la team n'existe pas"));
+                        ));
+                Team team = teamRepository.findByApiFootballTeamId(event.getTeam().getId()).orElseThrow(()-> new TeamNotFoundException("la team n'existe pas"));
 
                 Player playerAssist = null;
                 if (event.getAssist() != null && event.getAssist().getId() != null) {

@@ -1,4 +1,9 @@
 package com.dataFoot.playerstat;
+import com.dataFoot.exception.entitexception.ExternalApiException;
+import com.dataFoot.playerstat.dtoapi.ApiFootballPlayerStatItems;
+import com.dataFoot.playerstat.dtoapi.ApiFootballPlayerStatPlayers;
+import com.dataFoot.playerstat.dtoapi.ApiFootballPlayerStatResponse;
+import com.dataFoot.playerstat.dtoapi.ApiFootballPlayerStatStatistique;
 import com.dataFoot.playerstat.playerstatdto.PlayerStatImpactDto;
 import com.dataFoot.playerstat.playerstatdto.PlayerStatOffensiveDto;
 import com.dataFoot.playerstat.playerstatdto.PlayerStatPasseDto;
@@ -8,17 +13,12 @@ import com.dataFoot.player.Player;
 import com.dataFoot.team.TeamRepository;
 import com.dataFoot.match.MatchRepository;
 import com.dataFoot.player.PlayersRepository;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 public class PlayerStatService {
@@ -27,20 +27,16 @@ public class PlayerStatService {
     private final PlayerStatRepository playerStatRepository;
     private final PlayersRepository playersRepository;
     private final MatchRepository matchRepository;
-    private final HttpClient httpClient = HttpClient.newHttpClient();
     private final TeamRepository teamRepository;
-    private final ObjectMapper objectMapper;
+    private final RestClient apiSportClient;
 
 
-    @Value("${apisports.key}")
-    private  String apiSportsKey;
-
-    public PlayerStatService(PlayerStatRepository playerStatRepository, PlayersRepository playersRepository, MatchRepository matchRepository, TeamRepository teamRepository, ObjectMapper objectMapper) {
+    public PlayerStatService(PlayerStatRepository playerStatRepository, PlayersRepository playersRepository, MatchRepository matchRepository, TeamRepository teamRepository, RestClient apiSportClient) {
         this.playerStatRepository = playerStatRepository;
         this.matchRepository = matchRepository;
         this.playersRepository = playersRepository;
         this.teamRepository = teamRepository;
-        this.objectMapper = objectMapper;
+        this.apiSportClient = apiSportClient;
     }
 
 
@@ -60,231 +56,125 @@ public class PlayerStatService {
     }
 
     @Transactional
-    public void importStatPlayer(Long leagueId) throws Exception {
+    public int importStatPlayer(Long leagueId){
 
         List<Match> matches = matchRepository.findByLeagueId(leagueId);
 
-        List<Team> t = teamRepository.findByLeagueId(leagueId);
-        for (Match match : matches) {
+        int nbrStat = 0;
+        for(Match match : matches){
+            List<PlayerStats> listStat = new ArrayList<>();
 
-            int fixtureId = match.getApiFootballFixtureId();
-            String url = "https://v3.football.api-sports.io/fixtures/players?fixture=" + fixtureId;
-            JsonNode response = callApi(url).path("response");
 
-            if (response == null || !response.isArray()) {
+            if (playerStatRepository.existsByMatchId(match.getId())){
                 continue;
             }
+            String path = "/fixtures/players?fixture=" + match.getApiFootballFixtureId();
 
-            for (JsonNode json : response) {
+            ApiFootballPlayerStatResponse response = callApi(path);
 
-                Long apiTeamId = json.path("team").path("id").isMissingNode()
-                        ? null
-                        : json.path("team").path("id").asLong();
+            for(ApiFootballPlayerStatItems playerStat : response.getResponse()){
 
-                if (apiTeamId == null) {
-                    continue;
-                }
 
-                Team team = t.stream()
-                        .filter(c -> Objects.equals(c.getApiFootballTeamId(), apiTeamId))
-                        .findFirst()
-                        .orElse(null);
+                Team team = teamRepository.findByApiFootballTeamId(playerStat.getTeam().getId())
+                        .orElseThrow();
 
-                if (team == null) {
-                    System.out.println("Club introuvable pour apiTeamId = " + apiTeamId);
-                    continue;
-                }
+                for(ApiFootballPlayerStatPlayers stat : playerStat.getPlayers()){
 
-                JsonNode playersArray = json.path("players");
-                if (playersArray == null || !playersArray.isArray()) {
-                    continue;
-                }
 
-                for (JsonNode playerNode : playersArray) {
+                    Player player = playersRepository
+                            .findByApiFootballPlayerId(stat.getPlayer().getId())
+                            .orElseGet(() -> {
+                                Player newPlayer = new Player();
 
-                    Integer apiPlayerId = playerNode.path("player").path("id").isMissingNode()
-                            ? null
-                            : playerNode.path("player").path("id").asInt();
+                                newPlayer.setApiFootballPlayerId(stat.getPlayer().getId());
+                                newPlayer.setName(stat.getPlayer().getName());
+                                newPlayer.setPhoto(stat.getPlayer().getPhoto());
 
-                    String apiPlayerName = playerNode.path("player").path("name").isMissingNode()
-                            ? null
-                            : playerNode.path("player").path("name").asText();
+                                return playersRepository.save(newPlayer);
+                            });
 
-                    if (apiPlayerId == null) {
-                        continue;
+                    for(ApiFootballPlayerStatStatistique statPlayer : stat.getStatistics()){
+
+                        PlayerStats playerStats = new PlayerStats();
+
+                        playerStats.setMatch(match);
+                        playerStats.setTeam(team);
+                        playerStats.setNameClub(playerStat.getTeam().getName());
+
+                        playerStats.setPlayers(player);
+                        playerStats.setNameJoueur(player.getName());
+
+                        playerStats.setAssist(statPlayer.getGoals().getAssists());
+
+                        Integer accuracyInt = null;
+                        if(statPlayer.getPasses().getAccuracy() != null
+                                && !statPlayer.getPasses().getAccuracy().isBlank()){
+                            accuracyInt = Integer.parseInt(statPlayer.getPasses().getAccuracy());
+                        }
+
+                        playerStats.setAccuracyPass(accuracyInt);
+                        playerStats.setAttemptsDribbles(statPlayer.getDribbles().getAttempts());
+                        playerStats.setBlocks(statPlayer.getTackles().getBlocks());
+                        playerStats.setCaptain(statPlayer.getGames().isCaptain());
+                        playerStats.setFoulsCommitted(statPlayer.getFouls().getCommitted());
+                        playerStats.setFoulsDrawns(statPlayer.getFouls().getDrawn());
+                        playerStats.setGoalConceded(statPlayer.getGoals().getConceded());
+                        playerStats.setInterception(statPlayer.getTackles().getInterception());
+                        playerStats.setKeyPasse(statPlayer.getPasses().getKey());
+                        playerStats.setMinutePlayed(statPlayer.getGames().getMinutes());
+                        playerStats.setNote(statPlayer.getGames().getRating());
+                        playerStats.setOffside(statPlayer.getOffside());
+                        playerStats.setPastDribbles(statPlayer.getDribbles().getPast());
+                        playerStats.setPenaltSaved(statPlayer.getPenalty().getSaved());
+                        playerStats.setPenaltyCommited(statPlayer.getPenalty().getCommitted());
+                        playerStats.setPenaltyMissed(statPlayer.getPenalty().getMissed());
+                        playerStats.setPenaltyScored(statPlayer.getPenalty().getScored());
+                        playerStats.setPenaltyWon(statPlayer.getPenalty().getWon());
+                        playerStats.setRedCard(statPlayer.getCards().getRed());
+                        playerStats.setSaves(statPlayer.getGoals().getSave());
+                        playerStats.setShootOnTarget(statPlayer.getShots().getOn());
+                        playerStats.setSubstitute(statPlayer.getGames().isSubstitute());
+                        playerStats.setSucessDribles(statPlayer.getDribbles().getSuccess());
+                        playerStats.setTotalDuels(statPlayer.getDuels().getTotal());
+                        playerStats.setTotalGoal(statPlayer.getGoals().getTotal());
+                        playerStats.setTotalPasse(statPlayer.getPasses().getTotal());
+                        playerStats.setTotalShoot(statPlayer.getShots().getTotal());
+                        playerStats.setTotalTackle(statPlayer.getTackles().getTotal());
+                        playerStats.setWonDuels(statPlayer.getDuels().getWon());
+
+                        listStat.add(playerStats);
                     }
-
-                    Player player = playersRepository.findByApiFootballPlayerId(apiPlayerId).orElse(null);
-
-                    if (player == null) {
-                        System.out.println("Joueur absent de la base : " + apiPlayerId + " - " + apiPlayerName);
-                        continue;
-                    }
-
-                    JsonNode statNode = playerNode.path("statistics").get(0);
-                    if (statNode == null || statNode.isMissingNode() || statNode.isNull()) {
-                        continue;
-                    }
-
-                    // games
-                    Integer apiMinutePlayed = statNode.path("games").path("minutes").isNull()
-                            ? null : statNode.path("games").path("minutes").asInt();
-                    String apiRating = statNode.path("games").path("rating").isNull()
-                            ? null : statNode.path("games").path("rating").asText();
-                    Boolean apiCaptain = statNode.path("games").path("captain").isNull()
-                            ? null : statNode.path("games").path("captain").asBoolean();
-                    Boolean substitute = statNode.path("games").path("substitute").isNull()
-                            ? null : statNode.path("games").path("substitute").asBoolean();
-
-                    // offsides
-                    Integer offsides = statNode.path("offsides").isNull()
-                            ? null : statNode.path("offsides").asInt();
-
-                    // shots
-                    Integer totalShoot = statNode.path("shots").path("total").isNull()
-                            ? null : statNode.path("shots").path("total").asInt();
-                    Integer shootOnTarget = statNode.path("shots").path("on").isNull()
-                            ? null : statNode.path("shots").path("on").asInt();
-
-                    // goals
-                    Integer totalGoal = statNode.path("goals").path("total").isNull()
-                            ? null : statNode.path("goals").path("total").asInt();
-                    Integer conceded = statNode.path("goals").path("conceded").isNull()
-                            ? null : statNode.path("goals").path("conceded").asInt();
-                    Integer assists = statNode.path("goals").path("assists").isNull()
-                            ? null : statNode.path("goals").path("assists").asInt();
-                    Integer saves = statNode.path("goals").path("saves").isNull()
-                            ? null : statNode.path("goals").path("saves").asInt();
-
-                    // passes
-                    Integer totalPass = statNode.path("passes").path("total").isNull()
-                            ? null : statNode.path("passes").path("total").asInt();
-                    Integer key = statNode.path("passes").path("key").isNull()
-                            ? null : statNode.path("passes").path("key").asInt();
-                    String accuracy = statNode.path("passes").path("accuracy").isNull()
-                            ? null : statNode.path("passes").path("accuracy").asText();
-
-
-                    // tackles
-                    Integer totalTackles = statNode.path("tackles").path("total").isNull()
-                            ? null : statNode.path("tackles").path("total").asInt();
-                    Integer blocks = statNode.path("tackles").path("blocks").isNull()
-                            ? null : statNode.path("tackles").path("blocks").asInt();
-                    Integer interceptions = statNode.path("tackles").path("interceptions").isNull()
-                            ? null : statNode.path("tackles").path("interceptions").asInt();
-
-                    // duels
-                    Integer totalDuels = statNode.path("duels").path("total").isNull()
-                            ? null : statNode.path("duels").path("total").asInt();
-                    Integer won = statNode.path("duels").path("won").isNull()
-                            ? null : statNode.path("duels").path("won").asInt();
-
-                    // dribbles
-                    Integer attempts = statNode.path("dribbles").path("attempts").isNull()
-                            ? null : statNode.path("dribbles").path("attempts").asInt();
-                    Integer success = statNode.path("dribbles").path("success").isNull()
-                            ? null : statNode.path("dribbles").path("success").asInt();
-                    Integer past = statNode.path("dribbles").path("past").isNull()
-                            ? null : statNode.path("dribbles").path("past").asInt();
-
-                    // fouls
-                    Integer drawn = statNode.path("fouls").path("drawn").isNull()
-                            ? null : statNode.path("fouls").path("drawn").asInt();
-                    Integer committed = statNode.path("fouls").path("committed").isNull()
-                            ? null : statNode.path("fouls").path("committed").asInt();
-
-                    // cards
-                    Integer yellow = statNode.path("cards").path("yellow").isNull()
-                            ? null : statNode.path("cards").path("yellow").asInt();
-                    Integer red = statNode.path("cards").path("red").isNull()
-                            ? null : statNode.path("cards").path("red").asInt();
-
-                    // penalty
-                    Integer penaltyWon = statNode.path("penalty").path("won").isNull()
-                            ? null : statNode.path("penalty").path("won").asInt();
-                    Integer penaltycommited = statNode.path("penalty").path("commited").isNull()
-                            ? null : statNode.path("penalty").path("commited").asInt();
-                    Integer scored = statNode.path("penalty").path("scored").isNull()
-                            ? null : statNode.path("penalty").path("scored").asInt();
-                    Integer missed = statNode.path("penalty").path("missed").isNull()
-                            ? null : statNode.path("penalty").path("missed").asInt();
-                    Integer saved = statNode.path("penalty").path("saved").isNull()
-                            ? null : statNode.path("penalty").path("saved").asInt();
-
-
-
-                    PlayerStats stat = playerStatRepository.findByPlayers_IdAndMatch_Id(player.getId(),match.getId()).orElseGet(PlayerStats :: new);
-                    stat.setTeam(team);
-                    stat.setMatch(match);
-                    stat.setPlayers(player);
-                    assert team != null;
-                    stat.setNameClub(team.getName());
-                    stat.setNameJoueur(apiPlayerName);
-                    stat.setMinutePlayed(apiMinutePlayed != null ? apiMinutePlayed : 0);
-                    stat.setNote(apiRating);
-                    stat.setCaptain(apiCaptain != null ? apiCaptain : false);
-                    stat.setSubstitute(substitute != null ? substitute : false);
-
-                    stat.setOffside(offsides != null ? offsides : 0);
-
-                    stat.setTotalShoot(totalShoot != null ? totalShoot : 0);
-                    stat.setShootOnTarget(shootOnTarget != null ? shootOnTarget : 0);
-
-                    stat.setTotalGoal(totalGoal != null ? totalGoal : 0);
-                    stat.setGoalConceded(conceded != null ? conceded : 0);
-                    stat.setAssist(assists != null ? assists : 0);
-                    stat.setSaves(saves != null ? saves : 0);
-
-                    stat.setTotalPasse(totalPass != null ? totalPass : 0);
-                    stat.setKeyPasse(key != null ? key : 0);
-                    Integer accuracyInt = null;
-                    if(accuracy != null &&   !accuracy.isBlank()){
-                        accuracyInt= Integer.parseInt(accuracy);
-
-                    }
-                    stat.setAccuracyPass(accuracyInt);
-
-
-                    stat.setTotalTackle(totalTackles != null ? totalTackles : 0);
-                    stat.setBlocks(blocks != null ? blocks : 0);
-                    stat.setInterception(interceptions != null ? interceptions : 0);
-
-                    stat.setTotalDuels(totalDuels != null ? totalDuels : 0);
-                    stat.setWonDuels(won != null ? won : 0);
-
-                    stat.setAttemptsDribbles(attempts != null ? attempts : 0);
-                    stat.setSucessDribles(success != null ? success : 0);
-                    stat.setPastDribbles(past != null ? past : 0);
-
-                    stat.setFoulsDrawns(drawn != null ? drawn : 0);
-                    stat.setFoulsCommitted(committed != null ? committed : 0);
-
-                    stat.setYellowCard(yellow != null ? yellow : 0);
-                    stat.setRedCard(red != null ? red : 0);
-
-                    stat.setPenaltyWon(penaltyWon != null ? penaltyWon : 0);
-                    stat.setPenaltyCommited(penaltycommited != null ? penaltycommited : 0);
-                    stat.setPenaltyScored(scored != null ? scored : 0);
-                    stat.setPenaltyMissed(missed != null ? missed : 0);
-                    stat.setPenaltSaved(saved != null ? saved : 0);
-
-                    playerStatRepository.save(stat);
                 }
             }
+            playerStatRepository.saveAll(listStat);
+            nbrStat += listStat.size();
+
         }
+
+        return nbrStat;
+
     }
 
+    private ApiFootballPlayerStatResponse callApi(String path) {
 
-    private JsonNode callApi(String url) throws Exception {
-        HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .GET()
-                .header("x-apisports-key", apiSportsKey)
-                .header("Accept", "application/json")
-                .build();
-        HttpResponse<String> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
-        if (resp.statusCode() >= 400) throw new RuntimeException("API error " + resp.statusCode());
-        return objectMapper.readTree(resp.body());
+        try {
+            ApiFootballPlayerStatResponse response = apiSportClient.get()
+                    .uri(path)
+                    .retrieve()
+                    .body(ApiFootballPlayerStatResponse.class);
+
+            if(response == null || response.getResponse() == null){
+                throw new ExternalApiException("Réponse API vide pour : " + path);
+            }
+
+            return response;
+
+        } catch (RestClientException e) {
+            throw new ExternalApiException(
+                    "Erreur lors de l'appel API ou du parsing JSON",
+                    e
+            );
+        }
     }
 
 }

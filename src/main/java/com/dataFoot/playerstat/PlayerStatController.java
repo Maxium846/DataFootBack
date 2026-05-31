@@ -19,9 +19,9 @@ public class PlayerStatController {
     }
 
     @PostMapping("/match/{leagueId}")
-    public void importStatMatchPlayer(@PathVariable Long leagueId) throws Exception {
+    public int importStatMatchPlayer(@PathVariable Long leagueId) throws Exception {
 
-         playerStatService.importStatPlayer(leagueId);
+         return playerStatService.importStatPlayer(leagueId);
     }
     @GetMapping("/offensive/{leagueId}")
     public List<PlayerStatOffensiveDto> getStatsOffensive(
