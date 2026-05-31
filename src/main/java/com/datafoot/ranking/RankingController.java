@@ -1,7 +1,7 @@
 package com.datafoot.ranking;
 
 import com.datafoot.ranking.rankingdto.RankingDto;
-import com.datafoot.ranking.rankingdto.RankinkDtoAccueil;
+import com.datafoot.ranking.rankingdto.RankingDtoAccueil;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,7 +25,7 @@ public class RankingController {
     }
 
     @GetMapping("/classementAccueil")
-    public List<RankinkDtoAccueil>pageAccueilRanking(){
+    public List<RankingDtoAccueil>pageAccueilRanking(){
 
         return rankingService.pageAccueilClassement();
     }

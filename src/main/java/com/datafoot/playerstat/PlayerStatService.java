@@ -51,7 +51,7 @@ public class PlayerStatService {
         return playerStatRepository.findPlayerStatsPasseByLeagueId(leagueId);
     }
 
-    public List<PlayerStatImpactDto> getStatsInpact (Long leagueId){
+    public List<PlayerStatImpactDto> getStatsImpact (Long leagueId){
 
         return playerStatRepository.findPlayerStatsImpactByLeagueId(leagueId);
     }

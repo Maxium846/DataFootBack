@@ -2,7 +2,7 @@ package com.datafoot.ranking;
 
 import com.datafoot.exception.entitexception.LeagueNotFoundException;
 import com.datafoot.ranking.rankingdto.RankingDto;
-import com.datafoot.ranking.rankingdto.RankinkDtoAccueil;
+import com.datafoot.ranking.rankingdto.RankingDtoAccueil;
 import com.datafoot.league.League;
 import com.datafoot.match.Match;
 import com.datafoot.league.LeagueRepository;
@@ -39,7 +39,7 @@ public class RankingService {
                     .toList();
         }
 
-        public List<RankinkDtoAccueil> pageAccueilClassement()
+        public List<RankingDtoAccueil> pageAccueilClassement()
         {
             return  rankingRepository.findAll().stream().map(RankingMapper::toDtoPageAccueil).toList();
 

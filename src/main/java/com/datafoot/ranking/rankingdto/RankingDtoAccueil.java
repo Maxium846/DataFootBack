@@ -3,7 +3,7 @@ package com.datafoot.ranking.rankingdto;
 import lombok.Data;
 
 @Data
-public class RankinkDtoAccueil {
+public class RankingDtoAccueil {
 
     private Long clubId;
     private String clubName;

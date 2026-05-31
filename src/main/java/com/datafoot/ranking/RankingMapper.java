@@ -1,7 +1,7 @@
 package com.datafoot.ranking;
 
 import com.datafoot.ranking.rankingdto.RankingDto;
-import com.datafoot.ranking.rankingdto.RankinkDtoAccueil;
+import com.datafoot.ranking.rankingdto.RankingDtoAccueil;
 
 public class RankingMapper {
 
@@ -25,8 +25,8 @@ public class RankingMapper {
         return dto;
     }
 
-    public static RankinkDtoAccueil toDtoPageAccueil(Ranking c) {
-        RankinkDtoAccueil dto = new RankinkDtoAccueil();
+    public static RankingDtoAccueil toDtoPageAccueil(Ranking c) {
+        RankingDtoAccueil dto = new RankingDtoAccueil();
         dto.setClubId(c.getTeam().getId());
         dto.setClubName(c.getTeam().getName());
         dto.setPlayed(c.getPlayed());

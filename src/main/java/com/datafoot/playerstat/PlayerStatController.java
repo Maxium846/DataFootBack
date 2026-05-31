@@ -38,8 +38,8 @@ public class PlayerStatController {
         return playerStatService.getStatPasseur(leagueId);
     }
     @GetMapping("/stats/impact/{leagueId}")
-    public List<PlayerStatImpactDto> getStatInpact (@PathVariable Long leagueId){
+    public List<PlayerStatImpactDto> getStatImpact (@PathVariable Long leagueId){
 
-        return playerStatService.getStatsInpact(leagueId);
+        return playerStatService.getStatsImpact(leagueId);
     }
 }
