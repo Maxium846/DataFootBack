@@ -26,8 +26,4 @@ public class PlayerApiDto {
     private LocalDate birthday;
 
 
-    public PlayerApiDto(Integer number, Long id, Position position, Integer apiFootballPlayerId, String firstName) {
-    }
-
-
 }
