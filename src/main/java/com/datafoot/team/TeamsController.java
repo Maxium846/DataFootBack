@@ -18,7 +18,6 @@ public class TeamsController {
     }
 
 
-
     @GetMapping("/league/{leagueId}")
     public ResponseEntity<List<ListTeamDto>> getTeamsByLeagueId(@PathVariable long leagueId){
 
@@ -36,8 +35,8 @@ public class TeamsController {
     @PostMapping("/{leagueId}/{season}")
     public ResponseEntity<List<TeamDto>> importTeams(@PathVariable Long leagueId, @PathVariable int season) {
 
-        List<TeamDto> listeTeam = teamService.importOrUpdateClubsApiFootball(leagueId, season);
-        return ResponseEntity.status(HttpStatus.CREATED).body(listeTeam);
+        List<TeamDto> listTeam = teamService.importOrUpdateClubsApiFootball(leagueId, season);
+        return ResponseEntity.status(HttpStatus.CREATED).body(listTeam);
 
     }
 

@@ -30,7 +30,7 @@ class LeagueControllerTest {
     private JwtService jwtService;
 
     @Test
-    void shouldReturnAllLeagues() throws Exception {
+    void ReturnAllLeagues() throws Exception {
         LeagueDto ligue1 = new LeagueDto(
                 1L,
                 "Ligue 1",
@@ -64,7 +64,7 @@ class LeagueControllerTest {
     }
 
     @Test
-    void shouldImportLeagueByApiFootballId() throws Exception {
+    void ImportLeagueByApiFootballId() throws Exception {
         LeagueDto ligue1 = new LeagueDto(
                 1L,
                 "Ligue 1",

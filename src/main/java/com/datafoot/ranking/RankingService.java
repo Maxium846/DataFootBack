@@ -29,11 +29,9 @@ public class RankingService {
 
         public List<RankingDto> getClassementByLeague(Long leagueId) {
 
-            //  récupérer la ligue
             League league = leagueRepository.findById(leagueId)
                     .orElseThrow(() -> new LeagueNotFoundException("League introuvable"));
 
-            //  récupérer les classements avec club chargé
             List<Ranking> rankings = rankingRepository.findByLeagueIdWithClub(league.getId());
 
             return rankings.stream()

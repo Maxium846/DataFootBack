@@ -26,13 +26,9 @@ public interface MatchEventRepository extends JpaRepository<MatchEvent,Long> {
     int countAssists(@Param("playerId") int playerId,
                      @Param("goalTypes") List<EventType> goalTypes);
 
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("delete from MatchEvent me where me.match.id = :matchId")
-    void deleteAllByMatchId(@Param("matchId") Long matchId);
 
     int countByPlayerIdAndEventTypeIn(int playerId, Collection<EventType> types);
 
-    Optional<MatchEvent> findByMatchIdAndPlayerId(Long matchId, Long playerId);
     boolean existsByMatchId(Long matchId);
 
 }

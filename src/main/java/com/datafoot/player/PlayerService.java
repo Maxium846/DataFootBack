@@ -77,34 +77,6 @@ public class PlayerService {
 
     }
 
-    // version non optimisé n + 1 query
-    public List<PlayerDto> getPlayerByFifficulty (String difficulte) {
-        List<League> leagueEntities = leagueRepository.findAll();
-        List<Player> p1 = new ArrayList<>();
-
-        int limit = switch (difficulte){
-
-            case "Facile" -> 5;
-            case "Intermediaire" -> 10 ;
-            case "Difficile" -> 20 ;
-            default -> 0;
-        };
-
-        for(League league : leagueEntities){
-            List<Ranking> rankings = rankingRepository.findByLeagueIdWithClub(league.getId()).stream().limit(limit).toList();
-
-            for(Ranking ranking : rankings){
-
-                List<Player> player = playerRepository.findByTeamId(ranking.getTeam().getId()).stream().toList();
-                p1.addAll(player);
-            }
-
-        }
-        return p1.stream().map(PlayerMapper::toDto).toList();
-
-    }
-
-    // version optimisé avec query, permet d'eviter de faire plusisuers requetes
     public List<PlayerDto> getPlayerByDifficultyOpti (String difficulte) {
         int limit = switch (difficulte){
 

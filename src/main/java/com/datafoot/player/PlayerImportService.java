@@ -132,7 +132,7 @@ public class PlayerImportService {
             }
         }
 
-        throw new RuntimeException("Impossible d'appeler l'API après retries");
+        throw new ExternalApiException("Impossible d'appeler l'API après retries");
     }
 
     public Position mapPosition(String pos) {

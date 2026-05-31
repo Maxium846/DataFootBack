@@ -16,9 +16,6 @@ public interface PlayersRepository extends JpaRepository<Player,Long> {
     Optional<Player> findByApiFootballPlayerId(long apiFootballPlayerId);
 
 
-    List<Player> findByApiFootballPlayerIdIn(Collection<Integer> ids);
-
-
     @Query(value = """
     SELECT p.*
     FROM player p

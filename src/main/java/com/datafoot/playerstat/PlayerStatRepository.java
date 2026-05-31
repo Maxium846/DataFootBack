@@ -12,7 +12,6 @@ import java.util.Optional;
 
 public interface PlayerStatRepository extends JpaRepository<PlayerStats, Long> {
 
-    Optional<PlayerStats> findByPlayers_IdAndMatch_Id(Long joueurId, Long matchId);
 
     @Query("""
             SELECT COUNT(ps)

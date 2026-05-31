@@ -21,15 +21,6 @@ public interface RankingRepository extends JpaRepository<Ranking,Long> {
 
     boolean existsByLeagueIdAndTeamId(Long leagueId, Long teamId);
 
-    //Optional<Ranking> findByLeagueAndClub(League league, Teams team);
-
-    //List<Teams> findByClub(Teams team);
-    //boolean existsByLeagueIdAndClubId(Long leagueId, Long clubId);
-
-//    @Transactional
-//    @Modifying
-//    @Query("DELETE FROM Classement c WHERE c.league.id = :leagueId")
-//    void deleteByLeagueId(@Param("leagueId") Long leagueId);
 
     }
 

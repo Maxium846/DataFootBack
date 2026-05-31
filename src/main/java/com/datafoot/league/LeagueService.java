@@ -4,8 +4,8 @@ package com.datafoot.league;
 import com.datafoot.exception.entitexception.ExternalApiException;
 import com.datafoot.exception.entitexception.LeagueNotFoundException;
 import com.datafoot.league.dto.LeagueDto;
-import com.datafoot.league.dtoapi.ResponseDto;
-import com.datafoot.league.dtoapi.ResponseItemsDto;
+import com.datafoot.league.dtoapi.ApiFootballLeagueResponse;
+import com.datafoot.league.dtoapi.ApiFootballLeagueItems;
 import com.datafoot.league.mapper.LeagueMapper;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,6 @@ public class LeagueService {
 
     public LeagueService(LeagueRepository leagueRepository, RestClient apiSportClient) {
         this.leagueRepository = leagueRepository;
-
         this.apiSportClient = apiSportClient;
     }
 
@@ -44,38 +43,38 @@ public class LeagueService {
     @Transactional
     public LeagueDto importLeagueByApiFootball(int leagueApiId) {
         String path = "/leagues?id=" + leagueApiId;
-        ResponseDto response = callApi(path);
+        ApiFootballLeagueResponse response = callApi(path);
 
         if (response == null || response.getResponse() == null || response.getResponse().isEmpty()) {
 
 
-            throw new LeagueNotFoundException("La ligue avec l'id  " + leagueApiId + " API Football " + " Est introuvable");
+            throw new LeagueNotFoundException("La ligue avec l'id  " + leagueApiId + " API Football " + " n'existe pas");
         }
 
-        ResponseItemsDto responseItemsDto = response.getResponse().get(0);
+        ApiFootballLeagueItems apiFootballLeagueItems = response.getResponse().get(0);
 
         League league = leagueRepository.findByApiFootballLeagueId(leagueApiId).orElseGet(League::new);
 
-        updateLeagueFromApi(league,responseItemsDto);
+        updateLeagueFromApi(league, apiFootballLeagueItems);
         League savedLeague = leagueRepository.save(league);
 
 
         return LeagueMapper.toDto(savedLeague);
     }
 
-    private ResponseDto callApi(String path) {
+    private ApiFootballLeagueResponse callApi(String path) {
 
         try {
             return apiSportClient.get().uri(path)
                     .retrieve()
-                    .body(ResponseDto.class);
+                    .body(ApiFootballLeagueResponse.class);
         } catch (RestClientException e) {
             throw new ExternalApiException("Erreur lors de L'appel a l'API externe", e);
         }
     }
 
 
-    private static void updateLeagueFromApi(League league , ResponseItemsDto item){
+    private static void updateLeagueFromApi(League league , ApiFootballLeagueItems item){
 
         league.setApiFootballLeagueId(item.getLeague().getId());
         league.setName(item.getLeague().getName());

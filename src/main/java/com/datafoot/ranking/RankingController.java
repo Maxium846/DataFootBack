@@ -19,14 +19,13 @@ public class RankingController {
         this.rankingService = rankingService;
     }
 
-    //ok
-    @GetMapping("/{leagueId}/classement")
-    public List<RankingDto> getClassement(@PathVariable Long leagueId){
+    @GetMapping("/{leagueId}/ranking")
+    public List<RankingDto> getRanking(@PathVariable Long leagueId){
         return rankingService.getClassementByLeague(leagueId);
     }
 
     @GetMapping("/classementAccueil")
-    public List<RankinkDtoAccueil>pageAccueilClassemen(){
+    public List<RankinkDtoAccueil>pageAccueilRanking(){
 
         return rankingService.pageAccueilClassement();
     }

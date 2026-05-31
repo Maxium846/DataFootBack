@@ -7,7 +7,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class ResponseDto {
+public class ApiFootballLeagueResponse {
 
-    private List<ResponseItemsDto> response;
+    private List<ApiFootballLeagueItems> response;
 }

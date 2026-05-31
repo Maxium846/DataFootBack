@@ -5,8 +5,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ResponseCountryDto {
-
+public class ApiFootballLeague {
+    private int id;
     private String name;
-    private String flag;
+    private String logo;
 }
