@@ -39,11 +39,17 @@ Chaque domaine contient
 
 
 Api Externe : 
+- récupération des données via RestClient
 - Dtoapi représentant la réponse Api
 - Mapping vers les entités interne
 - Sauvegarde PostgreSQL
 - Exposition des Endpoints
-
+- 
+Sécurité :
+L'application intègre une authentification pour pouvoir jouer au jeu
+- Inscription Utilisateur
+- Connexion
+Les information sensibles ( clé API , mdp ,username PostgreSQL) sont externalisé via des variables d'environnements
 
 Amélioration prévus : 
 - Ajouter davantage de tests
