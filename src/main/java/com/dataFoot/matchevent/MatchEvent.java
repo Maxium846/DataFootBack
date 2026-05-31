@@ -16,7 +16,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"match", "player", "assistPlayer", "teams", "playerOut", "playerIn"})
+@ToString(exclude = {"match", "player", "assistPlayer", "team", "playerOut", "playerIn"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class MatchEvent {
 
