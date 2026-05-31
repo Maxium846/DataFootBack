@@ -35,6 +35,6 @@ public class MatchController {
 
 
     @PostMapping("/generate/{leagueId}/{season}")
-    public String generateFromPL(@PathVariable Long leagueId ,@PathVariable int season) {
+    public String importMatch(@PathVariable Long leagueId ,@PathVariable int season) {
         return fixtureImportService.generateCalendarFromApiFootball(leagueId,season);
     }}

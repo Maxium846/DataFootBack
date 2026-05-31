@@ -66,14 +66,12 @@ public class PlayerImportService {
             for (PlayerItemApi item : squad.getResponse()) {
                 for (PlayerItemPlayersApi p : item.getPlayers()) {
 
-                    // Déjà importé ? On skip
 
                     if (!dejaImportes.add(p.getId())) continue;
 
                     Player player = playerRepository.findByApiFootballPlayerId(p.getId())
                             .orElseGet(Player::new);
 
-                    // Profil complet avec retry
                     PlayerProfilResponse profil = callApiWithRetry(
                             "/players/profiles?player=" + p.getId(),
                             PlayerProfilResponse.class
@@ -95,15 +93,12 @@ public class PlayerImportService {
         return playersToSave.stream().map(PlayerMapper::toDtoApi).toList();
     }
 
-    // ============================
-    //   RETRY + BACKOFF EXPONENTIEL
-    // ============================
 
     private <T> T callApiWithRetry(String path, Class<T> clazz) throws Exception {
 
         int maxRetries = 8;
-        long waitMs = 200;       // si erreur non 429 petit délai entre les appels( evite le spam API )
-        long backoffMs = 1200;   // délai en cas de 429
+        long waitMs = 200;
+        long backoffMs = 1200;
 
         for (int attempt = 1; attempt <= maxRetries; attempt++) {
 
@@ -123,9 +118,7 @@ public class PlayerImportService {
 
                 return result;
             } catch (HttpClientErrorException.TooManyRequests e) {
-                // 429 → on attend et on réessaie
                 Thread.sleep(backoffMs);
-                // Si L'API renvoie un 429 on double le temps d'appel entre les retry
                 backoffMs = Math.min(backoffMs * 2, 20000);
                 continue;
 
@@ -134,7 +127,6 @@ public class PlayerImportService {
                 if (attempt == maxRetries) {
                     throw new ExternalApiException("Erreur API après retries : " + e.getMessage(), e);
                 }
-                // Fais une pause de 200 ms si l'erreur n'est pas une 429 (500 , 502 , 503 etc )
                 Thread.sleep(waitMs);
             }
         }

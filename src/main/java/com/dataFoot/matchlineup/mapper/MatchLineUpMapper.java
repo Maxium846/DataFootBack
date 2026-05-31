@@ -5,13 +5,18 @@ import com.dataFoot.matchlineup.MatchLineUp;
 
 public class MatchLineUpMapper {
 
-    public static MatchLineUpDto toDto (MatchLineUp matchLineUp){
+    public static MatchLineUpDto toDto(MatchLineUp lineup) {
+        MatchLineUpDto dto = new MatchLineUpDto();
 
-        MatchLineUpDto matchLineUpDto = new MatchLineUpDto();
-        matchLineUpDto.setId(matchLineUp.getId());
-        matchLineUpDto.setStarter(matchLineUpDto.getStarter());
-        matchLineUpDto.setTeamId(matchLineUp.getTeam().getId());
-        matchLineUpDto.setPlayerName(matchLineUp.getPlayers().getName());
-        return matchLineUpDto;
+        dto.setId(lineup.getId());
+        dto.setPlayerId(lineup.getPlayers().getId());
+        dto.setPlayerName(lineup.getPlayers().getName());
+        dto.setTeamId(lineup.getTeam().getId());
+        dto.setPosition(lineup.getPosition());
+        dto.setMatchId(lineup.getMatch().getId());
+        dto.setStarter(lineup.isStarter());
+
+        return dto;
+
     }
 }

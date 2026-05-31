@@ -11,7 +11,7 @@ public interface MatchRepository extends JpaRepository<Match,Long> {
     List<Match> findByLeagueAndPlayedTrue(League leagueId);
     List<Match> findMatchesByLeagueIdOrderByJourneeAsc(Long leagueId);
 
-    List<Match> findByLeagueId(Long leagueId);
+    List<Match> findByLeagueId(long leagueId);
 
     Optional<Match> findByApiFootballFixtureId(Integer fixtureId);
 

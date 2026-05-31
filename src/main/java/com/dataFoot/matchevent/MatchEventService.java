@@ -3,6 +3,7 @@ package com.dataFoot.matchevent;
 import com.dataFoot.match.matchdto.MatchEventDto;
 import com.dataFoot.enumeration.EventType;
 import com.dataFoot.match.MatchRepository;
+import com.dataFoot.matchevent.mapper.MatchEventMapper;
 import com.dataFoot.player.PlayersRepository;
 import com.dataFoot.team.TeamRepository;
 import com.dataFoot.team.Team;
@@ -11,6 +12,8 @@ import com.dataFoot.player.Player;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
+import static com.dataFoot.matchevent.mapper.MatchEventMapper.toDto;
 
 @Service
 public class MatchEventService {
@@ -37,7 +40,7 @@ public class MatchEventService {
         List<MatchEvent> events = eventRepo.findByMatchId(matchId);
 
         return events.stream()
-                .map(this::toDto)
+                .map(MatchEventMapper::toDto)
                 .toList();
     }
 
@@ -64,42 +67,6 @@ public class MatchEventService {
     }
 
 
-    private MatchEventDto toDto(MatchEvent event) {
 
-        MatchEventDto dto = new MatchEventDto();
-
-        dto.setId(event.getId());
-        dto.setMatchId(event.getMatch().getId());
-        dto.setMinutes(event.getMinute());
-        dto.setTeamId(event.getTeam().getId());
-
-        if (event.getEventType() != null) {
-            dto.setEventType(event.getEventType().name());
-        }
-
-        if (event.getPlayer() != null) {
-            dto.setPlayerId(event.getPlayer().getId());
-        }
-
-        if (event.getAssistPlayer() != null) {
-            dto.setAssistPlayerId(event.getAssistPlayer().getId());
-        }
-        if (event.getAssistPlayer() != null) {
-            dto.setAssistName(event.getAssistName());
-        }
-
-        if (event.getPlayerOut() != null) {
-            dto.setPlayerOutId(event.getPlayerOut().getId());
-            dto.setNamePlayerOut(event.getPlayerOutName());
-        }
-
-        if (event.getPlayerIn() != null) {
-            dto.setPlayerInId(event.getPlayerIn().getId());
-            dto.setNamePlayerin(event.getPlayerInName());
-        }
-
-
-        return dto;
-    }
 }
 

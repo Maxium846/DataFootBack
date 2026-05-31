@@ -70,7 +70,6 @@ public class FixtureImportService {
         }
 
 
-        // Clubs + init classement
         List<Team> clubs = teamRepository.findByLeagueId(leagueId);
         initClassement(league,clubs);
 
@@ -167,7 +166,6 @@ public class FixtureImportService {
 
     private Integer parseRoundToJournee(String round) {
         if (round == null || round.isBlank()) return null;
-        // "Regular Season - 1"
         int idx = round.lastIndexOf('-');
         if (idx < 0) return null;
         String n = round.substring(idx + 1).trim();

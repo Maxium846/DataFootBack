@@ -21,8 +21,8 @@ public interface PlayersRepository extends JpaRepository<Player,Long> {
 
     @Query(value = """
     SELECT p.*
-    FROM players p
-    JOIN team t ON p.team_id = t.id
+    FROM player p
+    JOIN teams t ON p.team_id = t.id
     JOIN (
         SELECT r.*,\s
                ROW_NUMBER() OVER (PARTITION BY r.league_id ORDER BY r.points DESC) as rn

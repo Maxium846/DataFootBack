@@ -46,7 +46,6 @@ public class MatchLineUp {
     private Team team;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable=false)
     private Position position;
 
     @Column(nullable=false)

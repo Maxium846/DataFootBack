@@ -23,13 +23,12 @@ public class MatchLineUpController {
         return ResponseEntity.ok(lineups);
     }
 
-    // 🔹 Ajouter un joueur dans la composition d'un match
-    @PostMapping("/{matchId}/lineup/{leagueId}")    public ResponseEntity<List<MatchLineUpDto>> addLineups(
-            @PathVariable Long matchId,
-            @RequestBody List<MatchLineUpDto> lineups,
-            @PathVariable Long leagueId) {
 
-        List<MatchLineUpDto> saved = lineupService.saveLineups(matchId, lineups,leagueId);
-        return ResponseEntity.ok(saved);
+    @PostMapping("matchLineUp/{leagueId}")
+    public String importLineUp( @PathVariable int leagueId){
+
+        return lineupService.importLineUpForLeague(leagueId);
+
     }
+
 }
